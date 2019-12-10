@@ -100,8 +100,6 @@ void Graphics::drawTexture(std::string path, SDL_Rect& src, SDL_Rect& dest) {
     if (mTextures.find(path) == mTextures.end()) {
       loadTexture(path);
     }
-    src.w = src.w * mWindowScale;
-    src.h = src.h * mWindowScale;
 
     dest.w = dest.w * mWindowScale;
     dest.h = dest.h * mWindowScale;

@@ -41,28 +41,13 @@ void Game::gameLoop() {
 }
 
 void Game::update() {
+  mSprite.play("idle");
 }
 
 void Game::draw() {
   mGraphics.beginDraw();
 
-  SDL_Rect srcR;
-  srcR.w = 640;
-  srcR.h = 360;
-  srcR.x = 0;
-  srcR.y = (480 - 360) / 2;
-
-  SDL_Rect destR;
-  destR.w = 640;
-  destR.h = 360;
-
-  mGraphics.drawTexture("town.bmp", srcR, destR);
-
-  srcR.w = 64;
-  srcR.h = 64;
-  destR.w = 64;
-  destR.h = 64;
-  mGraphics.drawTexture("town.png", srcR, destR);
+  mSprite.drawNextFrame(mGraphics);
   
   mGraphics.present();
 }

@@ -8,6 +8,7 @@
 #include <vector>
 #include "asset.hpp"
 #include "graphics.hpp"
+#include "acolyte.hpp"
 
 class Game {
   public:
@@ -28,6 +29,7 @@ class Game {
     bool mRunning{true};
 
     Graphics mGraphics;
+    Acolyte mSprite;
 };
 
 #endif //GAME_H_
