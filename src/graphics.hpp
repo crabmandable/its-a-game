@@ -20,7 +20,7 @@ class Graphics {
     void init();
     void destroyTexture(std::string path);
     void loadTexture(std::string path);
-    void drawTexture(std::string path, SDL_Rect& src, SDL_Rect& dest);
+    void drawTexture(std::string path, SDL_Rect& src, SDL_Rect& dest, SDL_RendererFlip flip = SDL_FLIP_NONE);
     void beginDraw();
     void present();
 

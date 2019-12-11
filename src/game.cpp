@@ -42,7 +42,9 @@ void Game::gameLoop() {
 
 void Game::update() {
   if (mInput.keyWasPressed(SDL_SCANCODE_D)) {
-    mGameObject.walk();
+    mGameObject.walk(false);
+  } else if (mInput.keyWasPressed(SDL_SCANCODE_A)) {
+    mGameObject.walk(true);
   } else if (mInput.keyWasPressed(SDL_SCANCODE_S)) {
     mGameObject.idle();
   }

@@ -18,8 +18,9 @@ void Sprite::pause() {
   mIsPlaying = false;
 }
 
-void Sprite::getNextFrame(SDL_Rect& srcRect) {
+void Sprite::getNextFrame(SDL_Rect& srcRect, SDL_RendererFlip& flip) {
   Animation* anim = mAnimations[mCurrentAnimation];
+  flip = anim->flip;
 
   srcRect.w = anim->width;
   srcRect.h = anim->height;
@@ -36,8 +37,9 @@ void Sprite::getNextFrame(SDL_Rect& srcRect) {
 
 void Sprite::drawNextFrame(Graphics& graphics)
 {
+  SDL_RendererFlip flip;
   SDL_Rect src;
-  getNextFrame(src);
+  getNextFrame(src, flip);
 
   SDL_Rect dest;
   dest.w = src.w;
@@ -45,14 +47,14 @@ void Sprite::drawNextFrame(Graphics& graphics)
   dest.x = mXPos;
   dest.y = mYPos;
 
-  graphics.drawTexture(mSheetName, src, dest);
+  graphics.drawTexture(mSheetName, src, dest, flip);
 }
 
 void Sprite::setSpriteSheet(std::string sheetName) {
   mSheetName = sheetName;
 }
 
-void Sprite::defineAnimation(std::string name, Sprite::Animation* animation)
+void Sprite::defineAnimation(std::string name, Animation* animation)
 {
   mAnimations.insert({name, animation});
 }

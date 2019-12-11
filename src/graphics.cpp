@@ -96,7 +96,7 @@ void Graphics::present() {
   SDL_RenderPresent(mRenderer);
 }
 
-void Graphics::drawTexture(std::string path, SDL_Rect& src, SDL_Rect& dest) {
+void Graphics::drawTexture(std::string path, SDL_Rect& src, SDL_Rect& dest, SDL_RendererFlip flip) {
     if (mTextures.find(path) == mTextures.end()) {
       loadTexture(path);
     }
@@ -105,5 +105,5 @@ void Graphics::drawTexture(std::string path, SDL_Rect& src, SDL_Rect& dest) {
     dest.h = dest.h * mWindowScale;
     dest.x = mWindowWidth / 2 - dest.w / 2;
     dest.y = mWindowHeight / 2 - dest.h / 2;
-    SDL_RenderCopy(mRenderer, mTextures[path], &src, &dest);
+    SDL_RenderCopyEx(mRenderer, mTextures[path], &src, &dest, 0, NULL, flip);
 }

@@ -6,33 +6,9 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 #include "graphics.hpp"
+#include "animation.hpp"
 class Sprite {
   public:
-    struct Animation {
-      int x;
-      int y;
-      int width;
-      int height;
-      int frameLength;
-      int nFrames;
-
-      Animation(
-          int x,
-          int y,
-          int width,
-          int height,
-          int frameLength,
-          int nFrames
-          ) :
-        x(x),
-        y(y),
-        width(width),
-        height(height),
-        frameLength(frameLength),
-        nFrames(nFrames)
-      {};
-    };
-
     void setSpriteSheet(std::string sheetName);
     void defineAnimation(std::string name, Animation* animation);
     void drawNextFrame(Graphics& graphics);
@@ -45,7 +21,7 @@ class Sprite {
     std::map<std::string, Animation*> mAnimations;
 
   private:
-    void getNextFrame(SDL_Rect& srcRect);
+    void getNextFrame(SDL_Rect& srcRect, SDL_RendererFlip& flip);
 
     int mFrameCounter = 0;
     bool mIsPlaying;
