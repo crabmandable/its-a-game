@@ -47,3 +47,12 @@ void Sprite::drawNextFrame(Graphics& graphics)
 
   graphics.drawTexture(mSheetName, src, dest);
 }
+
+void Sprite::setSpriteSheet(std::string sheetName) {
+  mSheetName = sheetName;
+}
+
+void Sprite::defineAnimation(std::string name, Sprite::Animation* animation)
+{
+  mAnimations.insert({name, animation});
+}

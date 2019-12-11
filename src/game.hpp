@@ -8,6 +8,7 @@
 #include <vector>
 #include "asset.hpp"
 #include "graphics.hpp"
+#include "input.hpp"
 #include "acolyte.hpp"
 
 class Game {
@@ -29,7 +30,8 @@ class Game {
     bool mRunning{true};
 
     Graphics mGraphics;
-    Acolyte mSprite;
+    Input mInput;
+    Acolyte mGameObject;
 };
 
 #endif //GAME_H_

@@ -41,24 +41,28 @@ void Game::gameLoop() {
 }
 
 void Game::update() {
-  mSprite.play("idle");
+  if (mInput.keyWasPressed(SDL_SCANCODE_D)) {
+    mGameObject.walk();
+  } else if (mInput.keyWasPressed(SDL_SCANCODE_S)) {
+    mGameObject.idle();
+  }
 }
 
 void Game::draw() {
   mGraphics.beginDraw();
 
-  mSprite.drawNextFrame(mGraphics);
+  mGameObject.draw(mGraphics);
   
   mGraphics.present();
 }
 
 void Game::handleInput() {
+  mInput.beginFrame();
   while(SDL_PollEvent(&mEvent)) {
     switch(mEvent.type) {
       case SDL_KEYDOWN:
-        if (mEvent.key.keysym.sym == SDLK_ESCAPE) {
-          mRunning = false;
-        }
+      case SDL_KEYUP:
+        mInput.keyEvent(mEvent.key);
         break;
       case SDL_QUIT:
           mRunning = false;

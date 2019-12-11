@@ -8,11 +8,6 @@
 #include "graphics.hpp"
 class Sprite {
   public:
-    void drawNextFrame(Graphics& graphics);
-    void play(std::string animationName);
-    void pause();
-
-  protected:
     struct Animation {
       int x;
       int y;
@@ -37,6 +32,14 @@ class Sprite {
         nFrames(nFrames)
       {};
     };
+
+    void setSpriteSheet(std::string sheetName);
+    void defineAnimation(std::string name, Animation* animation);
+    void drawNextFrame(Graphics& graphics);
+    void play(std::string animationName);
+    void pause();
+
+  protected:
     std::string mSheetName;
     int mGutterWidth = 2;
     std::map<std::string, Animation*> mAnimations;
