@@ -26,16 +26,21 @@ void Sprite::getNextFrame(SDL_Rect& srcRect, SDL_RendererFlip& flip) {
   srcRect.h = anim->height;
   srcRect.y = anim->y;
 
-  int animLength = anim->frameLength * anim->nFrames;
-  int frame = floor(((float)(mFrameCounter % animLength)) / anim->frameLength);
-  srcRect.x = frame * (anim->width + mGutterWidth) + anim->x;
+  if (anim->frameLength < 2) {
+    srcRect.x = anim->x;
+  } else {
+    int animLength = anim->frameLength * anim->nFrames;
+    int frame = floor(((float)(mFrameCounter % animLength)) / anim->frameLength);
+    srcRect.x = frame * (anim->width + mGutterWidth) + anim->x;
+  }
+
 
   if (mIsPlaying) {
     mFrameCounter++;
   }
 }
 
-void Sprite::drawNextFrame(Graphics& graphics)
+void Sprite::drawNextFrame(int x, int y, Graphics& graphics)
 {
   SDL_RendererFlip flip;
   SDL_Rect src;
@@ -44,8 +49,8 @@ void Sprite::drawNextFrame(Graphics& graphics)
   SDL_Rect dest;
   dest.w = src.w;
   dest.h = src.h;
-  dest.x = mXPos;
-  dest.y = mYPos;
+  dest.x = x;
+  dest.y = y;
 
   graphics.drawTexture(mSheetName, src, dest, flip);
 }

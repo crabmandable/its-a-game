@@ -103,7 +103,7 @@ void Graphics::drawTexture(std::string path, SDL_Rect& src, SDL_Rect& dest, SDL_
 
     dest.w = dest.w * mWindowScale;
     dest.h = dest.h * mWindowScale;
-    dest.x = mWindowWidth / 2 - dest.w / 2;
-    dest.y = mWindowHeight / 2 - dest.h / 2;
+    dest.x = mWindowScale *  dest.x / 2;
+    dest.y = mWindowScale * dest.y / 2;
     SDL_RenderCopyEx(mRenderer, mTextures[path], &src, &dest, 0, NULL, flip);
 }

@@ -41,19 +41,13 @@ void Game::gameLoop() {
 }
 
 void Game::update() {
-  if (mInput.keyWasPressed(SDL_SCANCODE_D)) {
-    mGameObject.walk(false);
-  } else if (mInput.keyWasPressed(SDL_SCANCODE_A)) {
-    mGameObject.walk(true);
-  } else if (mInput.keyWasPressed(SDL_SCANCODE_S)) {
-    mGameObject.idle();
-  }
+  mPlayer.update(mInput);
 }
 
 void Game::draw() {
   mGraphics.beginDraw();
 
-  mGameObject.draw(mGraphics);
+  mPlayer.draw(mGraphics);
   
   mGraphics.present();
 }

@@ -11,7 +11,7 @@ class Sprite {
   public:
     void setSpriteSheet(std::string sheetName);
     void defineAnimation(std::string name, Animation* animation);
-    void drawNextFrame(Graphics& graphics);
+    void drawNextFrame(int x, int y, Graphics& graphics);
     void play(std::string animationName);
     void pause();
 
@@ -26,8 +26,5 @@ class Sprite {
     int mFrameCounter = 0;
     bool mIsPlaying;
     std::string mCurrentAnimation;
-
-    int mXPos = 0;
-    int mYPos = 0;
 };
 #endif // SPRITE_H

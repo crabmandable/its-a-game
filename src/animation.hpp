@@ -3,22 +3,23 @@
 #include <SDL2/SDL.h>
 class Animation {
   public:
+    Animation();
     Animation(
         int x,
         int y,
         int width,
         int height,
-        int frameLength,
-        int nFrames,
+        int nFrames = 1,
+        int frameLength = 60,
         SDL_RendererFlip flip = SDL_FLIP_NONE
         );
 
-      int x;
-      int y;
-      int width;
-      int height;
-      int frameLength;
-      int nFrames;
-      SDL_RendererFlip flip;
+      int x = 0;
+      int y = 0;
+      int width = 0;
+      int height = 0;
+      int frameLength = 60;
+      int nFrames = 1;
+      SDL_RendererFlip flip = SDL_FLIP_NONE;
 };
 #endif // ANIMATION_H

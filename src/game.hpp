@@ -9,7 +9,7 @@
 #include "asset.hpp"
 #include "graphics.hpp"
 #include "input.hpp"
-#include "acolyte.hpp"
+#include "player.hpp"
 
 class Game {
   public:
@@ -31,7 +31,7 @@ class Game {
 
     Graphics mGraphics;
     Input mInput;
-    Acolyte mGameObject;
+    Player mPlayer;
 };
 
 #endif //GAME_H_
