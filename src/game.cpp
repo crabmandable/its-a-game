@@ -1,5 +1,9 @@
 #include "game.hpp"
 
+using std::chrono::high_resolution_clock;
+using std::chrono::milliseconds;
+using std::chrono::duration_cast;
+
 Game::Game() {
   SDL_Init(SDL_INIT_EVERYTHING);
   SDL_ShowCursor(SDL_DISABLE);
@@ -15,16 +19,17 @@ Game::~Game() {
 
 void Game::gameLoop() {
   int frameCounter = 0;
+  auto gameStartTime = high_resolution_clock::now();
+  auto elapsed = high_resolution_clock::now();
 
   while (mRunning) {
     frameCounter++;
-    using std::chrono::high_resolution_clock;
-    using std::chrono::milliseconds;
-    using std::chrono::duration_cast;
     auto startTime = high_resolution_clock::now();
 
     handleInput();
-    update();
+    int tick_ms = duration_cast<milliseconds>(high_resolution_clock::now() - elapsed).count();
+    elapsed = high_resolution_clock::now();
+    update(tick_ms);
     draw();
 
     auto elapsedLoopTime = duration_cast<milliseconds>(high_resolution_clock::now() - startTime);
@@ -40,8 +45,8 @@ void Game::gameLoop() {
   }
 }
 
-void Game::update() {
-  mPlayer.update(mInput);
+void Game::update(int elapsed_ms) {
+  mPlayer.update(mInput, elapsed_ms);
 }
 
 void Game::draw() {

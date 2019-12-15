@@ -9,6 +9,6 @@ class GameObject {
   protected:
     Sprite mSprite;
     int mXPos = 0;
-    int mYPos = 130;
+    int mYPos = 0;
 };
 #endif

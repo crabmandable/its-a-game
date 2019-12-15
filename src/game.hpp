@@ -20,7 +20,7 @@ class Game {
 
   private:
     void gameLoop();
-    void update();
+    void update(int elapsed_ms);
     void draw();
     void handleInput();
 
