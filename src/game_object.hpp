@@ -4,10 +4,10 @@
 #include "graphics.hpp"
 class GameObject {
   public:
-    void draw(Graphics& graphics);
+    void draw(Graphics& graphics, int elapsed_ms);
     void setPos(int x, int y);
   protected:
-    Sprite mSprite;
+    virtual Sprite* getSprite() = 0;
     int mXPos = 0;
     int mYPos = 0;
 };

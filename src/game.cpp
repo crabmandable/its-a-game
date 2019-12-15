@@ -30,7 +30,7 @@ void Game::gameLoop() {
     int tick_ms = duration_cast<milliseconds>(high_resolution_clock::now() - elapsed).count();
     elapsed = high_resolution_clock::now();
     update(tick_ms);
-    draw();
+    draw(tick_ms);
 
     auto elapsedLoopTime = duration_cast<milliseconds>(high_resolution_clock::now() - startTime);
     auto delay = milliseconds(1000/TARGET_FPS) - elapsedLoopTime;
@@ -40,7 +40,7 @@ void Game::gameLoop() {
 
     if (0 == frameCounter % 100) {
       auto frameDur = duration_cast<milliseconds>(high_resolution_clock::now() - startTime);
-      printf("frame=%d, fps=%f\n", frameCounter, 1000.0 / frameDur.count());
+      printf("frame=%d, fps=%f, delay=%ld\n", frameCounter, 1000.0 / frameDur.count(), delay.count());
     }
   }
 }
@@ -49,10 +49,10 @@ void Game::update(int elapsed_ms) {
   mPlayer.update(mInput, elapsed_ms);
 }
 
-void Game::draw() {
+void Game::draw(int elapsed_ms) {
   mGraphics.beginDraw();
 
-  mPlayer.draw(mGraphics);
+  mPlayer.draw(mGraphics, elapsed_ms);
   
   mGraphics.present();
 }

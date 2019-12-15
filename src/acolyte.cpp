@@ -17,3 +17,7 @@ void Acolyte::walk(bool left) {
   // std::cout << "imma head out" << std::endl;
   mSprite.play(left ? "walk_left" : "walk_right");
 }
+
+Sprite* Acolyte::getSprite() {
+  return &mSprite;
+}

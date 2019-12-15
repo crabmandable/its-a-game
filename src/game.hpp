@@ -21,7 +21,7 @@ class Game {
   private:
     void gameLoop();
     void update(int elapsed_ms);
-    void draw();
+    void draw(int elapsed_ms);
     void handleInput();
 
     SDL_Event mEvent;

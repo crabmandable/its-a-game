@@ -4,6 +4,7 @@
 #include "input.hpp"
 #include <stdlib.h>
 #include <algorithm>
+#include "animated_sprite.hpp"
 class Player : public GameObject {
   public:
     const float kAcceleration = 0.015;
@@ -28,9 +29,14 @@ class Player : public GameObject {
     void updateYVelocity(int elapsed_ms);
     void updateAnimation();
     void updatePosition(int elapsed_ms);
+
+  protected:
+    Sprite* getSprite();
+
   private:
     void updateState(Input& input, int elapsed_ms);
 
+    AnimatedSprite mSprite;
     State mState = State::Idle;
     bool mIsFacingRight = true;
     bool mGrounded = false;

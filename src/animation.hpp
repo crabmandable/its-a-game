@@ -10,7 +10,7 @@ class Animation {
         int width,
         int height,
         int nFrames = 1,
-        int frameLength = 60,
+        int frameLength_ms = 100,
         SDL_RendererFlip flip = SDL_FLIP_NONE
         );
 
@@ -18,7 +18,7 @@ class Animation {
       int y = 0;
       int width = 0;
       int height = 0;
-      int frameLength = 60;
+      int frameLength = 100;
       int nFrames = 1;
       SDL_RendererFlip flip = SDL_FLIP_NONE;
 };

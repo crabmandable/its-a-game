@@ -5,8 +5,8 @@ Player::Player() {
   Animation* il = new Animation(80, 1, 15, 31);
   il->flip = SDL_FLIP_HORIZONTAL;
   mSprite.defineAnimation("idle_left", il);
-  mSprite.defineAnimation("run_right", new Animation(97, 1, 15, 31, 3, 8));
-  mSprite.defineAnimation("run_left", new Animation(97, 1, 15, 31, 3, 8, SDL_FLIP_HORIZONTAL));
+  mSprite.defineAnimation("run_right", new Animation(97, 1, 15, 31, 3, 128));
+  mSprite.defineAnimation("run_left", new Animation(97, 1, 15, 31, 3, 128, SDL_FLIP_HORIZONTAL));
   mSprite.defineAnimation("jump_right", new Animation(165, 1, 15, 31));
   Animation* jl = new Animation(165, 1, 15, 31);
   jl->flip = SDL_FLIP_HORIZONTAL;
@@ -131,4 +131,8 @@ void Player::updatePosition(int elapsed_ms)
 {
   mXPos += (int)(mXVelocity * elapsed_ms);
   mYPos -= (int)(mYVelocity * elapsed_ms);
+}
+
+Sprite* Player::getSprite() {
+  return &mSprite;
 }

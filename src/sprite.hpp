@@ -1,30 +1,18 @@
 #ifndef SPRITE_H
 #define SPRITE_H
 #include <string>
-#include <map>
-#include <math.h>
-#include <iostream>
-#include <SDL2/SDL.h>
 #include "graphics.hpp"
-#include "animation.hpp"
 class Sprite {
   public:
     void setSpriteSheet(std::string sheetName);
-    void defineAnimation(std::string name, Animation* animation);
-    void drawNextFrame(int x, int y, Graphics& graphics);
-    void play(std::string animationName);
-    void pause();
-
+    void setSpriteLocation(SDL_Rect location);
+    void setFlip(SDL_RendererFlip flip);
+    virtual void drawNextFrame(int x, int y, Graphics& graphics, int elapsed_ms);
   protected:
     std::string mSheetName;
-    int mGutterWidth = 2;
-    std::map<std::string, Animation*> mAnimations;
+    SDL_RendererFlip mFlip = SDL_FLIP_NONE;
 
   private:
-    void getNextFrame(SDL_Rect& srcRect, SDL_RendererFlip& flip);
-
-    int mFrameCounter = 0;
-    bool mIsPlaying;
-    std::string mCurrentAnimation;
+    SDL_Rect mSpriteRect;
 };
-#endif // SPRITE_H
+#endif
