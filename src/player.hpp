@@ -10,9 +10,9 @@ class Player : public GameObject {
     const float kAcceleration = 0.015;
     const float kDeceleration = 0.00175;
     const float kJumpDeceleration = 0.0009;
-    const float kMaxSpeed = 0.4;
-    const float kJumpForce = 0.90;
-    const float kJumpLength_ms = 200;
+    const float kMaxSpeed = 0.22;
+    const float kJumpForce = 0.55;
+    const float kJumpLength_ms = 150;
     const float kGravity = 0.0048;
 
     enum class State {

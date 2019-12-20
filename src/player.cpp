@@ -1,16 +1,27 @@
 #include "player.hpp"
 Player::Player() {
-  mSprite.setSpriteSheet("mario-sheet.png");
-  mSprite.defineAnimation("idle_right", new Animation(80, 1, 15, 31));
-  Animation* il = new Animation(80, 1, 15, 31);
-  il->flip = SDL_FLIP_HORIZONTAL;
-  mSprite.defineAnimation("idle_left", il);
-  mSprite.defineAnimation("run_right", new Animation(97, 1, 15, 31, 3, 128));
-  mSprite.defineAnimation("run_left", new Animation(97, 1, 15, 31, 3, 128, SDL_FLIP_HORIZONTAL));
-  mSprite.defineAnimation("jump_right", new Animation(165, 1, 15, 31));
-  Animation* jl = new Animation(165, 1, 15, 31);
-  jl->flip = SDL_FLIP_HORIZONTAL;
-  mSprite.defineAnimation("jump_left", jl);
+  mSprite.setSpriteSheet("KidSheet.png");
+
+  auto idle = new Animation(0, 0, 24, 37, 4, 160);
+  mSprite.defineAnimation("idle_right", idle);
+  Animation* idleLeft = Animation::FlippedAnimation(idle, SDL_FLIP_HORIZONTAL);
+  mSprite.defineAnimation("idle_left", idleLeft);
+
+  auto run =  new Animation(0, 37, 28, 40, 7, 128);
+  mSprite.defineAnimation("run_right", run);
+  Animation* runLeft = Animation::FlippedAnimation(run, SDL_FLIP_HORIZONTAL);
+  mSprite.defineAnimation("run_left", runLeft);
+
+  Animation* jump = new Animation(0, 77, 28, 40, 2, 150);
+  jump->loop = false;
+  mSprite.defineAnimation("jump_right", jump);
+  Animation* jumpLeft = Animation::FlippedAnimation(jump, SDL_FLIP_HORIZONTAL);
+  mSprite.defineAnimation("jump_left", jumpLeft);
+
+  Animation* fall = new Animation(56, 77, 28, 40, 2, 180);
+  mSprite.defineAnimation("fall_right", fall);
+  Animation* fallLeft = Animation::FlippedAnimation(fall, SDL_FLIP_HORIZONTAL);
+  mSprite.defineAnimation("fall_left", fallLeft);
 }
 
 void Player::update(Input& input, int elapsed_ms) {
@@ -114,8 +125,14 @@ void Player::updateAnimation() {
         mSprite.play("run_left");
       }
       break;
-    case State::Jumping:
     case State::Falling:
+      if (mIsFacingRight) {
+        mSprite.play("fall_right");
+      } else {
+        mSprite.play("fall_left");
+      }
+      break;
+    case State::Jumping:
       if (mIsFacingRight) {
         mSprite.play("jump_right");
       } else {

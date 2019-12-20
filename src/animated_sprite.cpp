@@ -35,7 +35,12 @@ void AnimatedSprite::drawNextFrame(int x, int y, Graphics& graphics, int elapsed
     src.x = anim->x;
   } else {
     int animLength = anim->frameLength * anim->nFrames;
-    int frame = floor(((float)(mElapsed % animLength)) / anim->frameLength);
+    int frame;
+    if (anim->loop) {
+      frame = floor(((float)(mElapsed % animLength)) / anim->frameLength);
+    } else {
+      frame = std::min(anim->frameLength, (int)(((float)(mElapsed / animLength)) / anim->frameLength));
+    }
     src.x = frame * (anim->width + mGutterWidth) + anim->x;
   }
 
