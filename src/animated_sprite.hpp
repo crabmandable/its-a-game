@@ -16,7 +16,6 @@ class AnimatedSprite : public Sprite {
     void pause();
 
   protected:
-    int mGutterWidth = 0;
     std::map<std::string, Animation*> mAnimations;
 
   private:

@@ -41,7 +41,7 @@ void AnimatedSprite::drawNextFrame(int x, int y, Graphics& graphics, int elapsed
     } else {
       frame = std::min(anim->frameLength, (int)(((float)(mElapsed / animLength)) / anim->frameLength));
     }
-    src.x = frame * (anim->width + mGutterWidth) + anim->x;
+    src.x = frame * (anim->width + anim->padding) + anim->x;
   }
 
   SDL_Rect dest;

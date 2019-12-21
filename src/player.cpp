@@ -2,26 +2,31 @@
 Player::Player() {
   mSprite.setSpriteSheet("KidSheet.png");
 
-  auto idle = new Animation(0, 0, 24, 37, 4, 160);
+  auto idle = new Animation(0, 0, 24, 37, 4, 180);
   mSprite.defineAnimation("idle_right", idle);
-  Animation* idleLeft = Animation::FlippedAnimation(idle, SDL_FLIP_HORIZONTAL);
+  Animation* idleLeft = Animation::FlippedAnimation(idle);
   mSprite.defineAnimation("idle_left", idleLeft);
 
   auto run =  new Animation(0, 37, 28, 40, 7, 128);
   mSprite.defineAnimation("run_right", run);
-  Animation* runLeft = Animation::FlippedAnimation(run, SDL_FLIP_HORIZONTAL);
+  Animation* runLeft = Animation::FlippedAnimation(run);
   mSprite.defineAnimation("run_left", runLeft);
 
-  Animation* jump = new Animation(0, 77, 28, 40, 2, 150);
+  Animation* jump = new Animation(0, 77, 28, 40, 2, 100);
   jump->loop = false;
   mSprite.defineAnimation("jump_right", jump);
-  Animation* jumpLeft = Animation::FlippedAnimation(jump, SDL_FLIP_HORIZONTAL);
+  Animation* jumpLeft = Animation::FlippedAnimation(jump);
   mSprite.defineAnimation("jump_left", jumpLeft);
 
-  Animation* fall = new Animation(56, 77, 28, 40, 2, 180);
+  Animation* fall = new Animation(112, 77, 28, 40, 2, 180);
   mSprite.defineAnimation("fall_right", fall);
-  Animation* fallLeft = Animation::FlippedAnimation(fall, SDL_FLIP_HORIZONTAL);
+  Animation* fallLeft = Animation::FlippedAnimation(fall);
   mSprite.defineAnimation("fall_left", fallLeft);
+
+  Animation* fallMove = new Animation(56, 77, 28, 40, 2, 180);
+  mSprite.defineAnimation("fall_move_right", fallMove);
+  Animation* fallMoveLeft = Animation::FlippedAnimation(fallMove);
+  mSprite.defineAnimation("fall_move_left", fallMoveLeft);
 }
 
 void Player::update(Input& input, int elapsed_ms) {
@@ -112,36 +117,32 @@ void Player::updateYVelocity(int elapsed_ms) {
 void Player::updateAnimation() {
   switch(mState) {
     case State::Idle:
-      if (mIsFacingRight) {
-        mSprite.play("idle_right");
-      } else {
-        mSprite.play("idle_left");
-      }
+      playAnimation("idle");
       break;
     case State::Running:
-      if (mIsFacingRight) {
-        mSprite.play("run_right");
-      } else {
-        mSprite.play("run_left");
-      }
+      playAnimation("run");
       break;
     case State::Falling:
-      if (mIsFacingRight) {
-        mSprite.play("fall_right");
+      if (abs(mXVelocity) < kMaxSpeed) {
+        playAnimation("fall");
       } else {
-        mSprite.play("fall_left");
+        playAnimation("fall_move");
       }
       break;
     case State::Jumping:
-      if (mIsFacingRight) {
-        mSprite.play("jump_right");
-      } else {
-        mSprite.play("jump_left");
-      }
+      playAnimation("jump");
       break;
     default:
       break;
   };
+}
+
+void Player::playAnimation(std::string name) {
+  if (mIsFacingRight) {
+    mSprite.play(name + "_right");
+  } else {
+    mSprite.play(name + "_left");
+  }
 }
 
 void Player::updatePosition(int elapsed_ms)

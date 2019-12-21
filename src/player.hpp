@@ -10,9 +10,9 @@ class Player : public GameObject {
     const float kAcceleration = 0.015;
     const float kDeceleration = 0.00175;
     const float kJumpDeceleration = 0.0009;
-    const float kMaxSpeed = 0.22;
-    const float kJumpForce = 0.55;
-    const float kJumpLength_ms = 150;
+    const float kMaxSpeed = 0.23;
+    const float kJumpForce = 0.65;
+    const float kJumpLength_ms = 250;
     const float kGravity = 0.0048;
 
     enum class State {
@@ -35,6 +35,8 @@ class Player : public GameObject {
 
   private:
     void updateState(Input& input, int elapsed_ms);
+
+    void playAnimation(std::string name);
 
     AnimatedSprite mSprite;
     State mState = State::Idle;

@@ -3,7 +3,7 @@
 #include <SDL2/SDL.h>
 class Animation {
   public:
-    static Animation* FlippedAnimation(Animation* animation, SDL_RendererFlip flip);
+    static Animation* FlippedAnimation(Animation* animation, SDL_RendererFlip flip = SDL_FLIP_HORIZONTAL);
 
     Animation();
     Animation(
@@ -22,6 +22,7 @@ class Animation {
       int height = 0;
       int frameLength = 100;
       int nFrames = 1;
+      int padding = 0;
       bool loop = true;
       SDL_RendererFlip flip = SDL_FLIP_NONE;
 };
