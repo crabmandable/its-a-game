@@ -1,5 +1,19 @@
 #include "sprite.hpp"
 
+Sprite::Sprite() {
+}
+
+Sprite::~Sprite() {
+}
+
+Sprite::Sprite(std::string sheetName, int x, int y, int width, int height) {
+  mSheetName = sheetName;
+  mSpriteRect.x = x;
+  mSpriteRect.y = y;
+  mSpriteRect.w = width;
+  mSpriteRect.h = height;
+}
+
 void Sprite::setSpriteSheet(std::string sheetName) {
   mSheetName = sheetName;
 }

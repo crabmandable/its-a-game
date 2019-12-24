@@ -10,6 +10,7 @@
 #include "graphics.hpp"
 #include "input.hpp"
 #include "player.hpp"
+#include "room.hpp"
 
 class Game {
   public:
@@ -32,6 +33,7 @@ class Game {
     Graphics mGraphics;
     Input mInput;
     Player mPlayer;
+    Room* mRoom;
 };
 
 #endif //GAME_H_

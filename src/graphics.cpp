@@ -11,7 +11,7 @@ Graphics::~Graphics() {
   if (mWindow) SDL_DestroyWindow(mWindow);
 }
 
-std::string Graphics::getTexturePath(const std::string &subDir) {
+std::string Graphics::getResourcePath(const std::string &subDir) {
 #ifdef _WIN32
   const char PATH_SEP = '\\';
 #else
@@ -62,7 +62,7 @@ void Graphics::loadTexture(std::string path) {
      subdir = path.substr(0, path.find("/"));
      baseName = path.substr(path.find("/"));
   }
-  std::string dir = getTexturePath(subdir);
+  std::string dir = getResourcePath(subdir);
   std::string fullPath = dir + baseName;
   SDL_Texture* texture = IMG_LoadTexture(mRenderer, fullPath.c_str());
   if (!texture) {
@@ -103,7 +103,7 @@ void Graphics::drawTexture(std::string path, SDL_Rect& src, SDL_Rect& dest, SDL_
 
     dest.w = dest.w * mWindowScale;
     dest.h = dest.h * mWindowScale;
-    dest.x = mWindowScale *  dest.x / 2;
-    dest.y = mWindowScale * dest.y / 2;
+    dest.x = mWindowScale *  dest.x;
+    dest.y = mWindowScale * dest.y;
     SDL_RenderCopyEx(mRenderer, mTextures[path], &src, &dest, 0, NULL, flip);
 }

@@ -20,8 +20,8 @@ class Animation {
       int y = 0;
       int width = 0;
       int height = 0;
-      int frameLength = 100;
       int nFrames = 1;
+      int frameLength = 100;
       int padding = 0;
       bool loop = true;
       SDL_RendererFlip flip = SDL_FLIP_NONE;

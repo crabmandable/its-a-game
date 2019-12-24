@@ -7,13 +7,13 @@
 #include "animated_sprite.hpp"
 class Player : public GameObject {
   public:
-    const float kAcceleration = 0.015;
-    const float kDeceleration = 0.00175;
+    const float kAcceleration = 0.006;
+    const float kDeceleration = 0.00115;
     const float kJumpDeceleration = 0.0009;
-    const float kMaxSpeed = 0.23;
-    const float kJumpForce = 0.65;
+    const float kMaxSpeed = 0.17;
+    const float kJumpForce = 0.25;
     const float kJumpLength_ms = 250;
-    const float kGravity = 0.0048;
+    const float kGravity = 0.0028;
 
     enum class State {
       Idle,
@@ -35,8 +35,6 @@ class Player : public GameObject {
 
   private:
     void updateState(Input& input, int elapsed_ms);
-
-    void playAnimation(std::string name);
 
     AnimatedSprite mSprite;
     State mState = State::Idle;

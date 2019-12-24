@@ -12,7 +12,7 @@ class Graphics {
     static const int HEIGHT_RATIO = 9;
     static const int WIDTH_RATIO = 16;
 
-    static std::string getTexturePath(const std::string &subDir = "");
+    static std::string getResourcePath(const std::string &subDir = "");
 
     Graphics();
     ~Graphics();

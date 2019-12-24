@@ -4,6 +4,9 @@
 #include "graphics.hpp"
 class Sprite {
   public:
+    Sprite();
+    ~Sprite();
+    Sprite(std::string sheetName, int x, int y, int width, int height);
     void setSpriteSheet(std::string sheetName);
     void setSpriteLocation(SDL_Rect location);
     void setFlip(SDL_RendererFlip flip);

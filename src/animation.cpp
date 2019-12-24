@@ -24,4 +24,4 @@ Animation::Animation(
   nFrames(nFrames),
   frameLength(frameLength),
   flip(flip)
-{};
+{}

@@ -9,6 +9,7 @@ Game::Game() {
   SDL_ShowCursor(SDL_DISABLE);
 
   mGraphics.init();
+  mRoom = new Room("TestMap.tmx");
 
   gameLoop();
 }
@@ -19,7 +20,6 @@ Game::~Game() {
 
 void Game::gameLoop() {
   int frameCounter = 0;
-  auto gameStartTime = high_resolution_clock::now();
   auto elapsed = high_resolution_clock::now();
 
   while (mRunning) {
@@ -52,6 +52,7 @@ void Game::update(int elapsed_ms) {
 void Game::draw(int elapsed_ms) {
   mGraphics.beginDraw();
 
+  mRoom->drawTiles(mGraphics, elapsed_ms);
   mPlayer.draw(mGraphics, elapsed_ms);
   
   mGraphics.present();
