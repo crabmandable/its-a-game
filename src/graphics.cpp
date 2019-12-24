@@ -53,6 +53,8 @@ void Graphics::init() {
     std::cout << "Unable to create SDL_Window:" << SDL_GetError() << std::endl;
     return;
   }
+
+  SDL_SetWindowTitle(mWindow, "Zach's amazing game");
 }
 
 void Graphics::loadTexture(std::string path) {
@@ -101,8 +103,8 @@ void Graphics::drawTexture(std::string path, SDL_Rect& src, SDL_Rect& dest, SDL_
       loadTexture(path);
     }
 
-    dest.w = dest.w * mWindowScale;
-    dest.h = dest.h * mWindowScale;
+    dest.w = ceil(((float)dest.w) * mWindowScale);
+    dest.h = ceil(((float)dest.h) * mWindowScale);
     dest.x = mWindowScale *  dest.x;
     dest.y = mWindowScale * dest.y;
     SDL_RenderCopyEx(mRenderer, mTextures[path], &src, &dest, 0, NULL, flip);
