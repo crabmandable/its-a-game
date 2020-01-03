@@ -109,3 +109,13 @@ void Graphics::drawTexture(std::string path, SDL_Rect& src, SDL_Rect& dest, SDL_
     dest.y = mWindowScale * dest.y;
     SDL_RenderCopyEx(mRenderer, mTextures[path], &src, &dest, 0, NULL, flip);
 }
+
+void Graphics::drawLine(int x1, int y1, int x2, int y2, bool blue) {
+  if (blue) {
+    SDL_SetRenderDrawColor(mRenderer, kBlueLineColor[0], kBlueLineColor[1], kBlueLineColor[2], kBlueLineColor[3]);
+  } else {
+    SDL_SetRenderDrawColor(mRenderer, kLineColor[0], kLineColor[1], kLineColor[2], kLineColor[3]);
+  }
+  SDL_RenderDrawLine(mRenderer, x1 * mWindowScale, y1 * mWindowScale, x2 * mWindowScale, y2 * mWindowScale);
+  SDL_SetRenderDrawColor(mRenderer, kBackgroundColor[0], kBackgroundColor[1], kBackgroundColor[2], kBackgroundColor[3]);
+}

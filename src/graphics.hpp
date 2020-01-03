@@ -11,6 +11,9 @@ class Graphics {
     static const int SCREEN_HEIGHT = 360;
     static const int HEIGHT_RATIO = 9;
     static const int WIDTH_RATIO = 16;
+    const int kLineColor[4] = {255, 0, 0, SDL_ALPHA_OPAQUE};
+    const int kBlueLineColor[4] = {0, 0, 255, SDL_ALPHA_OPAQUE};
+    const int kBackgroundColor[4] = {0, 0, 0, SDL_ALPHA_OPAQUE};
 
     static std::string getResourcePath(const std::string &subDir = "");
 
@@ -21,6 +24,7 @@ class Graphics {
     void destroyTexture(std::string path);
     void loadTexture(std::string path);
     void drawTexture(std::string path, SDL_Rect& src, SDL_Rect& dest, SDL_RendererFlip flip = SDL_FLIP_NONE);
+    void drawLine(int x1, int y1, int x2, int y2, bool blue = false);
     void beginDraw();
     void present();
 

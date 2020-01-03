@@ -2,7 +2,7 @@
 Player::Player() {
   mSprite.setSpriteSheet("KidSheet.png");
 
-  auto idle = new Animation(0, 0, 24, 37, 4, 180);
+  auto idle = new Animation(0, 0, 24, 37, 1/*4*/, 180);
   mSprite.defineAnimation("idle", idle);
 
   auto run =  new Animation(0, 37, 28, 40, 7, 128);
@@ -23,8 +23,7 @@ void Player::update(Input& input, int elapsed_ms) {
   updateState(input, elapsed_ms);
   updateXVelocity(elapsed_ms);
   updateYVelocity(elapsed_ms);
-  updatePosition(elapsed_ms);
-  updateAnimation();
+  updateCollisionEdges();
 }
 
 void Player::updateState(Input& input, int elapsed_ms) {
@@ -41,12 +40,13 @@ void Player::updateState(Input& input, int elapsed_ms) {
     mDirection = -1;
   }
 
-  mGrounded = mYPos >= (32 * 9) - 37; // TODO get real collision
+  // mGrounded = mYPos >= (32 * 9) - 37; // TODO get real collision
   
   if (mGrounded) {
     if (jump) {
       mState = State::Jumping;
       mJumpElapsed = 0;
+      mGrounded = false;
     } else if (mDirection != 0) {
       mState = State::Running;
     } else {
@@ -96,11 +96,9 @@ void Player::updateXVelocity(int elapsed_ms) {
 
 void Player::updateYVelocity(int elapsed_ms) {
   if (mState == State::Jumping) {
-    mYVelocity = kJumpForce;
-  } else if (mGrounded) {
-    mYVelocity = 0;
-  } else if (mState == State::Falling) {
-    mYVelocity -= kGravity * elapsed_ms;
+    mYVelocity = -kJumpForce;
+  } else {
+    mYVelocity += kGravity * elapsed_ms;
   }
 }
 
@@ -136,9 +134,87 @@ void Player::updateAnimation() {
 void Player::updatePosition(int elapsed_ms)
 {
   mXPos += (int)(mXVelocity * elapsed_ms);
-  mYPos -= (int)(mYVelocity * elapsed_ms);
+  mYPos += (int)(mYVelocity * elapsed_ms);
+  
+  //todo hard coded screen size
+  if (mXPos < -4 || mXPos > 640) {
+    mXPos = 0;
+    mGrounded = false;
+    mXVelocity = 0;
+  }
+  if (mYPos < -4 || mYPos > 360) {
+    mYPos = 0;
+    mGrounded = false;
+    mYVelocity = 0;
+  }
 }
 
 Sprite* Player::getSprite() {
   return &mSprite;
 }
+
+Collision::CollisionEdge* Player::getCollisionEdge(int idx) {
+  return mCollisionEdges + idx;
+}
+
+void Player::getPosition(int &x, int &y) {
+  x = mXPos;
+  y = mYPos;
+}
+
+void Player::incrementPosition(int x, int y) {
+  mXPos += x;
+  mYPos += y;
+  updateCollisionEdges();
+}
+
+void Player::updateCollisionEdges() {
+  using namespace Collision;
+  //left
+  mCollisionEdges[0].originX = kCollisionXOffset + mXPos;
+  mCollisionEdges[0].originY = kCollisionYOffset + mYPos;
+  mCollisionEdges[0].orientation = Orientation::X;
+  mCollisionEdges[0].direction = CollisionDirection::Negative;
+  mCollisionEdges[0].length = kCollisionXLength;
+  mCollisionEdges[0].velocityX = mXVelocity;
+  mCollisionEdges[0].velocityY = mYVelocity;
+
+  //top
+  mCollisionEdges[1].originX = kCollisionXOffset + mXPos;
+  mCollisionEdges[1].originY = kCollisionYOffset + mYPos;
+  mCollisionEdges[1].orientation = Orientation::Y;
+  mCollisionEdges[1].direction = CollisionDirection::Negative;
+  mCollisionEdges[1].length = kCollisionYLength;
+  mCollisionEdges[1].velocityX = mXVelocity;
+  mCollisionEdges[1].velocityY = mYVelocity;
+
+  //right
+  mCollisionEdges[2].originX = kCollisionXOffset + mXPos + kCollisionYLength;
+  mCollisionEdges[2].originY = kCollisionYOffset + mYPos;
+  mCollisionEdges[2].orientation = Orientation::X;
+  mCollisionEdges[2].direction = CollisionDirection::Positive;
+  mCollisionEdges[2].length = kCollisionXLength;
+  mCollisionEdges[2].velocityX = mXVelocity;
+  mCollisionEdges[2].velocityY = mYVelocity;
+
+  //bottom
+  mCollisionEdges[3].originX = kCollisionXOffset + mXPos;
+  mCollisionEdges[3].originY = kCollisionYOffset + mYPos + kCollisionXLength;
+  mCollisionEdges[3].orientation = Orientation::Y;
+  mCollisionEdges[3].direction = CollisionDirection::Positive;
+  mCollisionEdges[3].length = kCollisionYLength;
+  mCollisionEdges[3].velocityX = mXVelocity;
+  mCollisionEdges[3].velocityY = mYVelocity;
+}
+
+void Player::isGrounded(bool grounded) {
+  mGrounded = grounded;
+  if (grounded) {
+    mState = mDirection != 0 ? State::Running : State::Idle;
+    mYVelocity = 0;
+    for (int i = 0; i < 4; i++) {
+      mCollisionEdges[i].velocityY = 0;
+    }
+  }
+}
+

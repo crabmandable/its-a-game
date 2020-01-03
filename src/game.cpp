@@ -29,6 +29,8 @@ void Game::gameLoop() {
     handleInput();
     int tick_ms = duration_cast<milliseconds>(high_resolution_clock::now() - elapsed).count();
     elapsed = high_resolution_clock::now();
+    // need consistent tick for debugging
+    tick_ms = 16;
     update(tick_ms);
     draw(tick_ms);
 
@@ -47,6 +49,8 @@ void Game::gameLoop() {
 
 void Game::update(int elapsed_ms) {
   mPlayer.update(mInput, elapsed_ms);
+  updatePlayerPosition(elapsed_ms);
+  mPlayer.updateAnimation();
 }
 
 void Game::draw(int elapsed_ms) {
@@ -54,6 +58,23 @@ void Game::draw(int elapsed_ms) {
 
   mRoom->drawTiles(mGraphics, elapsed_ms);
   mPlayer.draw(mGraphics, elapsed_ms);
+
+  if (mShouldDrawCollision) {
+    for (int i = 0; i < 4; i++) {
+      using namespace Collision;
+      CollisionEdge* playerEdge = mPlayer.getCollisionEdge(i);
+      playerEdge->draw(mGraphics);
+      std::vector<CollisionEdge*> tileEdges;
+      mRoom->getCollisionEdgesNear(playerEdge->originX, playerEdge->originY, playerEdge->orientation, tileEdges);
+      for (auto edge: tileEdges) {
+        edge->draw(mGraphics);
+      }
+    }
+
+    for (auto edge : mCollidedEdges) {
+      edge->draw(mGraphics, true);
+    }
+  }
   
   mGraphics.present();
 }
@@ -72,5 +93,50 @@ void Game::handleInput() {
       default: break;
     }
   }
+}
+
+void Game::updatePlayerPosition(int elapsed_ms) {
+  using namespace Collision;
+
+  for (auto edge: mCollidedEdges) delete edge;
+  mCollidedEdges.clear();
+
+  //hanlde player collisions
+  bool colliding = false;
+  bool grounded = false;
+  do {
+    colliding = false;
+    for (int i = 0; i < 4; i++) {
+      CollisionEdge* playerEdge = mPlayer.getCollisionEdge(i);
+
+      std::vector<CollisionEdge*> tileEdges;
+      mRoom->getCollisionEdgesNear(playerEdge->originX, playerEdge->originY, playerEdge->orientation, tileEdges);
+
+      for (auto edge: tileEdges) {
+        int deltaX = 0, deltaY = 0;
+        detectCollision(*playerEdge, *edge, elapsed_ms, deltaX, deltaY);
+        if (deltaX != 0 || deltaY != 0) {
+          mPlayer.incrementPosition(-deltaX, -deltaY);
+
+          mCollidedEdges.push_back(new CollisionEdge(*edge));
+          mCollidedEdges.push_back(new CollisionEdge(*playerEdge));
+          colliding = true;
+          break;
+        }
+      }
+
+      for (auto edge: tileEdges) delete edge;
+
+      if (colliding) {
+        if (i == 3) {
+          grounded = true;
+        }
+        break;
+      }
+    }
+  } while (colliding);
+
+  mPlayer.updatePosition(elapsed_ms);
+  mPlayer.isGrounded(grounded);
 }
 

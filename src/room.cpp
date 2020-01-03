@@ -13,6 +13,29 @@ void Room::drawTiles(Graphics& graphics, int elapsed_ms) {
       }
     }
   }
+
+  // using namespace Collision;
+  // for (int i = 0; i < mRows; i++) {
+  //   for (int j = 0; j < mColumns; j++) {
+  //     for (int k = 0; k < 4; k++) {
+  //       if (unsigned int dir = collisionTileMap[mCollisionMap[i][j]][k]) {
+  //         CollisionEdge e;
+  //         e.direction = (CollisionDirection)dir;
+  //         e.orientation = k % 2 ? Orientation::Y : Orientation::X;
+  //         e.originX = j * kTileSize + (k == 2 ? kTileSize : 0);
+  //         e.originY = i * kTileSize - (k == 3 ? kTileSize : 0);
+  //         e.length = kTileSize;
+
+  //         graphics.drawLine(
+  //           e.originX,
+  //           e.originY,
+  //           e.originX + (e.orientation == Orientation::Y ? e.length : 0),
+  //           e.originY + (e.orientation == Orientation::X ? e.length : 0)
+  //         );
+  //       }
+  //     }
+  //   }
+  // }
 }
 
 Room::Room(std::string name) {
@@ -26,18 +49,9 @@ Room::Room(std::string name) {
     return;
   }
 
-  int cols = 0;
-  mapFile.FirstChildElement("map")->QueryIntAttribute("width", &cols);
+  initLayers(mapFile);
 
-  int rows = 0;
-  mapFile.FirstChildElement("map")->QueryIntAttribute("height", &rows);
-
-  int layers = 0;
-  XMLElement* l = mapFile.FirstChildElement("map")->FirstChildElement("layer");
-  do { layers++; } while ((l = l->NextSiblingElement("layer")));
-
-  setSize(cols, rows, layers);
-
+  // load up the tile mappings so we can init sprites
   XMLElement* tileset = mapFile.FirstChildElement("map")->FirstChildElement("tileset");
 
   int minGID = 9000;
@@ -52,12 +66,14 @@ Room::Room(std::string name) {
     minGID = std::min(minGID, t->firstGID);
   } while ((tileset = tileset->NextSiblingElement("tileset")));
 
+  // loop through layers and load up the sprites
   XMLElement* layer = mapFile.FirstChildElement("map")->FirstChildElement("layer");
   int layerIdx = 0;
   do {
     const char* name;
     layer->QueryStringAttribute("name", &name);
     std::cout << "Loading layer: " << name << std::endl;
+    bool isCollisionLayer = 0 == strcmp("collision", name);
 
     std::stringstream bgData(layer->FirstChildElement("data")->GetText());
     std::string line;
@@ -68,6 +84,7 @@ Room::Room(std::string name) {
         std::string token = line.substr(0, pos);
         line.erase(0, pos + 1);
         int gID =  std::stoi(token);
+
         if (gID < minGID) continue;
         
         size_t i;
@@ -79,6 +96,12 @@ Room::Room(std::string name) {
         i--;
 
         TileSet* tileset = tileSets[i];
+
+        if (isCollisionLayer) {
+          mCollisionMap[row][col] = gID + 1 - tileset->firstGID;
+          if (!mDrawCollision) continue;
+        }
+
         int id = gID - tileset->firstGID;
         int tileRow = id / tileset->columns;
         int tileCol = id % tileset->columns;
@@ -97,12 +120,53 @@ Room::Room(std::string name) {
   }
 }
 
-void Room::setSize(int columns, int rows, int layers) {
-  mWidth = columns * kTileSize;
-  mHeight = rows * kTileSize;
-  mColumns = columns;
-  mRows = rows;
+void Room::initLayers(tinyxml2::XMLDocument& mapFile) {
+  mapFile.FirstChildElement("map")->QueryIntAttribute("width", &mColumns);
+  mapFile.FirstChildElement("map")->QueryIntAttribute("height", &mRows);
+
+  // figure out how many layers we need to draw
+  int layers = 0;
+  tinyxml2::XMLElement* l = mapFile.FirstChildElement("map")->FirstChildElement("layer");
+  do {
+    const char* name;
+    l->QueryStringAttribute("name", &name);
+    if (mDrawCollision || 0 != strcmp(name, "collision")) {
+      layers++;
+    }
+  } while ((l = l->NextSiblingElement("layer")));
+
+  mWidth = mColumns * kTileSize;
+  mHeight = mRows * kTileSize;
+
+  //init layers
   for (int i = 0; i < layers; i++) {
     mTileLayers.push_back(vector<vector<Sprite*>>(mRows, vector<Sprite*>(mColumns, nullptr)));
   }
+  mCollisionMap = vector<vector<unsigned int>>(mRows, vector<unsigned int>(mColumns, 0x0));
 }
+
+void Room::getCollisionEdgesNear(int x, int y, Collision::Orientation orientation, std::vector<Collision::CollisionEdge*> &edges) {
+  using namespace Collision;
+  edges.clear();
+  x = std::max(x / kTileSize - kCollisionCheckTileRadius, 0);
+  y = std::max(y / kTileSize - kCollisionCheckTileRadius, 0);
+  for (int i = y; i < mRows && i < y + (kCollisionCheckTileRadius * 2) + 1; i++) {
+    for (int j = x; j < mColumns && j < x + (kCollisionCheckTileRadius * 2) + 1; j++) {
+      // look up tile in tile map
+      for (int k = orientation == Orientation::X ? 0 : 1; k < 4; k+=2) {
+      // (void)orientation;
+      // for (int k = 0; k < 4; k++) {
+        if (unsigned int dir = collisionTileMap[mCollisionMap[i][j]][k]) {
+          CollisionEdge* e = new CollisionEdge();
+          e->direction = (CollisionDirection)dir;
+          e->orientation = k % 2 ? Orientation::Y : Orientation::X;
+          e->originX = j * kTileSize + (k == 2 ? kTileSize : 0);
+          e->originY = i * kTileSize + (k == 3 ? kTileSize : 0);
+          e->length = kTileSize;
+          edges.push_back(e);
+        }
+      }
+    }
+  }
+}
+

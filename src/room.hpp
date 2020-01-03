@@ -5,6 +5,7 @@
 #include "game_object.hpp"
 #include "graphics.hpp"
 #include "tinyxml2.hpp"
+#include "collision.hpp"
 class Room {
   public:
     static const int kTileSize{16};
@@ -13,7 +14,7 @@ class Room {
     Room();
     ~Room();
     void drawTiles(Graphics& graphics, int elapsed_ms);
-    void setSize(int columns, int rows, int layers);
+    void getCollisionEdgesNear(int x, int y, Collision::Orientation orientation, std::vector<Collision::CollisionEdge*> &edges);
 
   private:
     struct TileSet {
@@ -23,10 +24,14 @@ class Room {
       const char* src;
     };
 
+    void initLayers(tinyxml2::XMLDocument& mapFile);
+
     int mColumns;
     int mRows;
     int mWidth;
     int mHeight;
+    bool mDrawCollision = false;
     std::vector<std::vector<std::vector<Sprite*>>> mTileLayers;
+    std::vector<std::vector<unsigned int>> mCollisionMap;
 };
 #endif // ROOM_H

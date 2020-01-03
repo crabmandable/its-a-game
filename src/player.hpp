@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <algorithm>
 #include "animated_sprite.hpp"
+#include "collision.hpp"
+
 class Player : public GameObject {
   public:
     const float kAcceleration = 0.006;
@@ -14,6 +16,15 @@ class Player : public GameObject {
     const float kJumpForce = 0.25;
     const float kJumpLength_ms = 250;
     const float kGravity = 0.0028;
+
+    const int kCollisionXLength = 37;
+    const int kCollisionYLength = 15;
+
+    const int kCollisionXOffset = 4;
+    const int kCollisionYOffset = 0;
+
+    const int kCollisionYCutOut = 2;
+    const int kCollisionXCutOut = 3;
 
     enum class State {
       Idle,
@@ -30,11 +41,17 @@ class Player : public GameObject {
     void updateAnimation();
     void updatePosition(int elapsed_ms);
 
+    Collision::CollisionEdge* getCollisionEdge(int idx);
+
+    void incrementPosition(int x, int y);
+    void getPosition(int &x, int &y);
+    void isGrounded(bool grounded);
   protected:
     Sprite* getSprite();
 
   private:
     void updateState(Input& input, int elapsed_ms);
+    void updateCollisionEdges();
 
     AnimatedSprite mSprite;
     State mState = State::Idle;
@@ -45,5 +62,7 @@ class Player : public GameObject {
 
     int mDirection = 0;
     int mJumpElapsed = 0;
+
+    Collision::CollisionEdge mCollisionEdges[4];
 };
 #endif // PLAYER_H
