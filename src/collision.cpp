@@ -6,24 +6,24 @@ void Collision::detectCollision(CollisionEdge &e1, CollisionEdge &e2, int elapse
   float delta = 0;
   if (e1.orientation != e2.orientation) return;
   float v = e1.parallelVelocity() - e2.parallelVelocity();
-  if ((e1.directionIsPositive() && e2.directionIsNegative() && v > 0) || (e1.directionIsNegative() && e2.directionIsPositive() && v < 0)) {
+  if ((e1.directionIsPositive() && e2.directionIsNegative() && v >= 0) || (e1.directionIsNegative() && e2.directionIsPositive() && v <= 0)) {
     float e1P1, e1P2;
     e1.getPerpendicularPoints(e1P1, e1P2, elapsed_ms);
     float e2P1, e2P2;
     e2.getPerpendicularPoints(e2P1, e2P2, elapsed_ms);
-    if ((e1P1 < e2P1 && e1P2 > e2P2) || (e1P1 >= e2P1 && e1P1 <= e2P2) || (e1P2 >= e2P1 && e1P2 <= e2P2)) {
+    if ((e1P1 <= e2P1 && e1P2 >= e2P2) || (e1P1 >= e2P1 && e1P1 <= e2P2) || (e1P2 >= e2P1 && e1P2 <= e2P2)) {
       float p1Before = e1.getParallelPoint();
       float p2Before = e2.getParallelPoint();
       float p1After = p1Before + (elapsed_ms * e1.parallelVelocity());
       float p2After = p2Before + (elapsed_ms * e2.parallelVelocity());
 
       if (p1Before <= p2Before) {
-        if (p1After > p2After) {
+        if (p1After >= p2After) {
           //collision!!
           delta = ceil(p1After - p2After);
         }
       } else if (p1Before >= p2Before) {
-        if (p1After < p2After) {
+        if (p1After <= p2After) {
           //collision!
           delta = floor(p1After - p2After);
         }

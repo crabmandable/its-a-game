@@ -162,41 +162,47 @@ void Player::incrementPosition(int x, int y) {
   updateCollisionEdges();
 }
 
+void Player::setPosition(int x, int y) {
+  mXPos = x;
+  mYPos = y;
+  updateCollisionEdges();
+}
+
 void Player::updateCollisionEdges() {
   using namespace Collision;
   //left
   mCollisionEdges[0].originX = kCollisionXOffset + mXPos;
-  mCollisionEdges[0].originY = kCollisionYOffset + mYPos;
+  mCollisionEdges[0].originY = kCollisionYOffset + mYPos - kCollisionXOverhang;
   mCollisionEdges[0].orientation = Orientation::X;
   mCollisionEdges[0].direction = CollisionDirection::Negative;
-  mCollisionEdges[0].length = kCollisionXLength;
+  mCollisionEdges[0].length = kCollisionXLength + kCollisionXOverhang;
   mCollisionEdges[0].velocityX = mXVelocity;
   mCollisionEdges[0].velocityY = mYVelocity;
 
   //top
-  mCollisionEdges[1].originX = kCollisionXOffset + mXPos;
+  mCollisionEdges[1].originX = kCollisionXOffset + mXPos - kCollisionYOverhang;
   mCollisionEdges[1].originY = kCollisionYOffset + mYPos;
   mCollisionEdges[1].orientation = Orientation::Y;
   mCollisionEdges[1].direction = CollisionDirection::Negative;
-  mCollisionEdges[1].length = kCollisionYLength;
+  mCollisionEdges[1].length = kCollisionYLength + (kCollisionYOverhang * 2);
   mCollisionEdges[1].velocityX = mXVelocity;
   mCollisionEdges[1].velocityY = mYVelocity;
 
   //right
   mCollisionEdges[2].originX = kCollisionXOffset + mXPos + kCollisionYLength;
-  mCollisionEdges[2].originY = kCollisionYOffset + mYPos;
+  mCollisionEdges[2].originY = kCollisionYOffset + mYPos - kCollisionXOverhang;
   mCollisionEdges[2].orientation = Orientation::X;
   mCollisionEdges[2].direction = CollisionDirection::Positive;
-  mCollisionEdges[2].length = kCollisionXLength;
+  mCollisionEdges[2].length = kCollisionXLength + kCollisionXOverhang;
   mCollisionEdges[2].velocityX = mXVelocity;
   mCollisionEdges[2].velocityY = mYVelocity;
 
   //bottom
-  mCollisionEdges[3].originX = kCollisionXOffset + mXPos;
+  mCollisionEdges[3].originX = kCollisionXOffset + mXPos - kCollisionYOverhang;
   mCollisionEdges[3].originY = kCollisionYOffset + mYPos + kCollisionXLength;
   mCollisionEdges[3].orientation = Orientation::Y;
   mCollisionEdges[3].direction = CollisionDirection::Positive;
-  mCollisionEdges[3].length = kCollisionYLength;
+  mCollisionEdges[3].length = kCollisionYLength + (kCollisionYOverhang * 2);
   mCollisionEdges[3].velocityX = mXVelocity;
   mCollisionEdges[3].velocityY = mYVelocity;
 }

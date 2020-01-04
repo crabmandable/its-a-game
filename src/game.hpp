@@ -13,8 +13,9 @@
 #include "room.hpp"
 
 #ifndef DEBUG
-#define DEBUG false
+#define DEBUG true
 #endif
+
 class Game {
   public:
     static const int TARGET_FPS = 60;
@@ -30,11 +31,11 @@ class Game {
     void updatePlayerPosition(int elapsed_ms);
 
     SDL_Event mEvent;
-    SDL_Window* mWindow{nullptr};
-    SDL_Renderer* mRenderer{nullptr};
     bool mRunning{true};
 
+#if DEBUG
     bool mShouldDrawCollision = DEBUG;
+#endif
 
     Graphics mGraphics;
     Input mInput;

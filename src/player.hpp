@@ -17,14 +17,13 @@ class Player : public GameObject {
     const float kJumpLength_ms = 250;
     const float kGravity = 0.0028;
 
-    const int kCollisionXLength = 37;
-    const int kCollisionYLength = 15;
+    const int kCollisionXLength = 35;
+    const int kCollisionYLength = 8;
+    const int kCollisionXOverhang = 0;
+    const int kCollisionYOverhang = 1;
 
-    const int kCollisionXOffset = 4;
+    const int kCollisionXOffset = 9;
     const int kCollisionYOffset = 0;
-
-    const int kCollisionYCutOut = 2;
-    const int kCollisionXCutOut = 3;
 
     enum class State {
       Idle,
@@ -44,6 +43,7 @@ class Player : public GameObject {
     Collision::CollisionEdge* getCollisionEdge(int idx);
 
     void incrementPosition(int x, int y);
+    void setPosition(int x, int y);
     void getPosition(int &x, int &y);
     void isGrounded(bool grounded);
   protected:

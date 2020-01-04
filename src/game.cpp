@@ -10,6 +10,7 @@ Game::Game() {
 
   mGraphics.init();
   mRoom = new Room("TestMap.tmx");
+  // mPlayer.setPosition(236, 0);
 
   gameLoop();
 }

@@ -1,8 +1,12 @@
-CXX ?= g++
+DEBUG ?= false
+
+CXX := g++
+CXXDEFINES += -DDEBUG=$(DEBUG)
 MKDIR := mkdir -p
 CXXFLAGS += `pkg-config --cflags sdl2 SDL2_image`
-CXXFLAGS += -Wall -Werror -Wextra -pedantic -std=c++14 -g
+CXXFLAGS += -Wall -Werror -Wextra -pedantic -std=c++14 -g $(CXXDEFINES)
 LDFLAGS += `pkg-config --libs sdl2 SDL2_image`
+LDFLAGS += -lm
 PROG := bin/game
 OBJS := $(patsubst src/%.cpp,obj/%.o, $(wildcard src/*.cpp))
 DEPS := $(OBJS:.o=.d)
