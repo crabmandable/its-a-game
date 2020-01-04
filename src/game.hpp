@@ -12,6 +12,9 @@
 #include "player.hpp"
 #include "room.hpp"
 
+#ifndef DEBUG
+#define DEBUG false
+#endif
 class Game {
   public:
     static const int TARGET_FPS = 60;
@@ -31,14 +34,16 @@ class Game {
     SDL_Renderer* mRenderer{nullptr};
     bool mRunning{true};
 
-    bool mShouldDrawCollision = true;
+    bool mShouldDrawCollision = DEBUG;
 
     Graphics mGraphics;
     Input mInput;
     Player mPlayer;
     Room* mRoom;
 
+#ifdef DEBUG
     std::vector<Collision::CollisionEdge*> mCollidedEdges{std::vector<Collision::CollisionEdge*>()};
+#endif
 };
 
 #endif //GAME_H_

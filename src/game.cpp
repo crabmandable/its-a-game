@@ -29,8 +29,10 @@ void Game::gameLoop() {
     handleInput();
     int tick_ms = duration_cast<milliseconds>(high_resolution_clock::now() - elapsed).count();
     elapsed = high_resolution_clock::now();
+#if DEBUG
     // need consistent tick for debugging
     tick_ms = 16;
+#endif
     update(tick_ms);
     draw(tick_ms);
 
@@ -40,10 +42,12 @@ void Game::gameLoop() {
       SDL_Delay(delay.count());
     }
 
+#if DBEUG
     if (0 == frameCounter % 100) {
       auto frameDur = duration_cast<milliseconds>(high_resolution_clock::now() - startTime);
       printf("frame=%d, fps=%f, delay=%ld\n", frameCounter, 1000.0 / frameDur.count(), delay.count());
     }
+#endif
   }
 }
 
@@ -59,6 +63,7 @@ void Game::draw(int elapsed_ms) {
   mRoom->drawTiles(mGraphics, elapsed_ms);
   mPlayer.draw(mGraphics, elapsed_ms);
 
+#if DEBUG
   if (mShouldDrawCollision) {
     for (int i = 0; i < 4; i++) {
       using namespace Collision;
@@ -75,6 +80,7 @@ void Game::draw(int elapsed_ms) {
       edge->draw(mGraphics, true);
     }
   }
+#endif
   
   mGraphics.present();
 }
@@ -98,8 +104,10 @@ void Game::handleInput() {
 void Game::updatePlayerPosition(int elapsed_ms) {
   using namespace Collision;
 
+#if DEBUG
   for (auto edge: mCollidedEdges) delete edge;
   mCollidedEdges.clear();
+#endif
 
   //hanlde player collisions
   bool colliding = false;
@@ -118,8 +126,11 @@ void Game::updatePlayerPosition(int elapsed_ms) {
         if (deltaX != 0 || deltaY != 0) {
           mPlayer.incrementPosition(-deltaX, -deltaY);
 
+#ifdef DEBUG
           mCollidedEdges.push_back(new CollisionEdge(*edge));
           mCollidedEdges.push_back(new CollisionEdge(*playerEdge));
+#endif
+
           colliding = true;
           break;
         }

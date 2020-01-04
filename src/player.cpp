@@ -2,10 +2,10 @@
 Player::Player() {
   mSprite.setSpriteSheet("KidSheet.png");
 
-  auto idle = new Animation(0, 0, 24, 37, 1/*4*/, 180);
+  auto idle = new Animation(0, 0, 24, 37, 4, 180);
   mSprite.defineAnimation("idle", idle);
 
-  auto run =  new Animation(0, 37, 28, 40, 7, 128);
+  auto run =  new Animation(0, 37, 28, 40, 7, 80);
   mSprite.defineAnimation("run", run);
 
   Animation* jump = new Animation(0, 77, 28, 40, 2, 100);
@@ -40,8 +40,6 @@ void Player::updateState(Input& input, int elapsed_ms) {
     mDirection = -1;
   }
 
-  // mGrounded = mYPos >= (32 * 9) - 37; // TODO get real collision
-  
   if (mGrounded) {
     if (jump) {
       mState = State::Jumping;
@@ -88,10 +86,6 @@ void Player::updateXVelocity(int elapsed_ms) {
     if ((mIsFacingRight && mXVelocity < 0) || (!mIsFacingRight && mXVelocity > 0))
       mXVelocity = 0;
   }
-
-  // if (abs(mXVelocity) > 0) {
-  //   printf("vel:%f, dir:%d, mDir:%d\n", mXVelocity, dir, mDirection);
-  // }
 }
 
 void Player::updateYVelocity(int elapsed_ms) {
