@@ -61,8 +61,9 @@ void Game::update(int elapsed_ms) {
 void Game::draw(int elapsed_ms) {
   mGraphics.beginDraw();
 
-  mRoom->drawTiles(mGraphics, elapsed_ms);
+  mRoom->drawTiles(mGraphics);
   mPlayer.draw(mGraphics, elapsed_ms);
+  mGraphics.blitLayersToScreen();
 
 #if DEBUG
   if (mShouldDrawCollision) {

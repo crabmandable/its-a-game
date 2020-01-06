@@ -2,20 +2,20 @@
 Player::Player() {
   mSprite.setSpriteSheet("KidSheet.png");
 
-  auto idle = new Animation(0, 0, 24, 37, 4, 180);
+  auto idle = new Animation(0, 0, 24, 39, 4, 208);
   mSprite.defineAnimation("idle", idle);
 
-  auto run =  new Animation(0, 37, 28, 40, 7, 80);
+  auto run =  new Animation(0, 81, 28, 42, 7, 80);
   mSprite.defineAnimation("run", run);
 
-  Animation* jump = new Animation(0, 77, 28, 40, 2, 100);
+  Animation* jump = new Animation(0, 39, 28, 42, 2, 100);
   jump->loop = false;
   mSprite.defineAnimation("jump", jump);
 
-  Animation* fall = new Animation(112, 77, 28, 40, 2, 180);
+  Animation* fall = new Animation(112, 39, 28, 40, 2, 180);
   mSprite.defineAnimation("fall", fall);
 
-  Animation* fallMove = new Animation(56, 77, 28, 40, 2, 180);
+  Animation* fallMove = new Animation(56, 39, 28, 40, 2, 180);
   mSprite.defineAnimation("fall_move", fallMove);
 }
 

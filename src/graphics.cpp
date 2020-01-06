@@ -7,6 +7,8 @@ Graphics::~Graphics() {
   for (auto& it: mTextures) {
     SDL_DestroyTexture(it.second);
   }
+  if (mForegroundRenderer) SDL_DestroyRenderer(mForegroundRenderer);
+  if (mForegroundSurface) SDL_FreeSurface(mForegroundSurface);
   if (mRenderer) SDL_DestroyRenderer(mRenderer); 
   if (mWindow) SDL_DestroyWindow(mWindow);
 }
@@ -55,9 +57,28 @@ void Graphics::init() {
   }
 
   SDL_SetWindowTitle(mWindow, "Zach's amazing game");
+
+  if (!(mForegroundSurface = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0, 0, 0, 0))) {
+    std::cout << "Unable to create tile surface:" << SDL_GetError() << std::endl;
+    return;
+  }
+
+  Uint32 colorkey = SDL_MapRGB(mForegroundSurface->format, 0, 0, 0);
+  SDL_SetColorKey(mForegroundSurface, SDL_TRUE, colorkey);
+
+  if (!(mForegroundRenderer = SDL_CreateSoftwareRenderer(mForegroundSurface))) {
+    std::cout << "Unable to create tile renderer:" << SDL_GetError() << std::endl;
+    return;
+  }
 }
 
-void Graphics::loadTexture(std::string path) {
+SDL_Texture* Graphics::getTexture(std::string path, RenderLayer layer) {
+  std::string key = ((char)layer) + "|" + path;
+
+  if (mTextures.find(key) != mTextures.end()) {
+    return mTextures[key];
+  }
+
   std::string subdir = "";
   std::string baseName = path;
   if (path.find("/") != std::string::npos) {
@@ -66,18 +87,16 @@ void Graphics::loadTexture(std::string path) {
   }
   std::string dir = getResourcePath(subdir);
   std::string fullPath = dir + baseName;
-  SDL_Texture* texture = IMG_LoadTexture(mRenderer, fullPath.c_str());
+  SDL_Texture* texture = IMG_LoadTexture(getRenderer(layer), fullPath.c_str());
   if (!texture) {
     std::cout << "Error loading img:" << fullPath << std::endl;
     std::cout << SDL_GetError() << std::endl;
   } else {
     std::cout << "Loaded img:" << fullPath << std::endl;
   }
-  mTextures.insert({path, texture});
-}
 
-void Graphics::destroyTexture(std::string path) {
-  SDL_DestroyTexture(mTextures[path]);
+  mTextures.insert({key, texture});
+  return texture;
 }
 
 void Graphics::updateWindowSize() {
@@ -91,23 +110,51 @@ void Graphics::updateWindowSize() {
 
 void Graphics::beginDraw() {
   updateWindowSize();
+  SDL_SetRenderDrawColor(mRenderer, kBackgroundColor[0], kBackgroundColor[1], kBackgroundColor[2], kBackgroundColor[3]);
+  SDL_SetRenderDrawColor(mForegroundRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
   SDL_RenderClear(mRenderer);
+  SDL_RenderClear(mForegroundRenderer);
+}
+
+void Graphics::blitLayersToScreen() {
+  SDL_Rect src, dest;
+  dest.x = dest.y = src.y = src.x = 0;
+  src.w = SCREEN_WIDTH;
+  src.h = SCREEN_HEIGHT;
+
+  dest.w = ceil(((float)SCREEN_WIDTH) * mWindowScale);
+  dest.h = ceil(((float)SCREEN_HEIGHT) * mWindowScale);
+
+  SDL_Texture* t = SDL_CreateTextureFromSurface(mRenderer, mForegroundSurface);
+  SDL_RenderCopy(mRenderer, t, &src, &dest);
+  SDL_DestroyTexture(t);
 }
 
 void Graphics::present() {
   SDL_RenderPresent(mRenderer);
 }
 
-void Graphics::drawTexture(std::string path, SDL_Rect& src, SDL_Rect& dest, SDL_RendererFlip flip) {
-    if (mTextures.find(path) == mTextures.end()) {
-      loadTexture(path);
-    }
+void Graphics::drawTile(std::string tileSheetPath, SDL_Rect src, int column, int row) {
+  SDL_Texture* texture = getTexture(tileSheetPath, RenderLayer::Foreground);
 
-    dest.w = ceil(((float)dest.w) * mWindowScale);
-    dest.h = ceil(((float)dest.h) * mWindowScale);
-    dest.x = mWindowScale *  dest.x;
-    dest.y = mWindowScale * dest.y;
-    SDL_RenderCopyEx(mRenderer, mTextures[path], &src, &dest, 0, NULL, flip);
+  SDL_Rect dest;
+  src.w = src.h = dest.h = dest.w = TILE_SIZE;
+  dest.x = column * TILE_SIZE;
+  dest.y = row * TILE_SIZE;
+  SDL_RenderCopy(mForegroundRenderer, texture, &src, &dest);
+}
+
+void Graphics::drawTexture(RenderLayer layer, std::string path, SDL_Rect& src, SDL_Rect& dest, SDL_RendererFlip flip) {
+  SDL_Texture* texture = getTexture(path, layer);
+  SDL_RenderCopyEx(getRenderer(layer), texture, &src, &dest, 0, NULL, flip);
+}
+
+SDL_Renderer* Graphics::getRenderer(RenderLayer layer) {
+  switch(layer) {
+    case RenderLayer::Foreground:
+    default:
+      return mForegroundRenderer;
+  }
 }
 
 void Graphics::drawLine(int x1, int y1, int x2, int y2, bool blue) {

@@ -3,39 +3,16 @@ using std::vector;
 Room::~Room() {
 }
 
-void Room::drawTiles(Graphics& graphics, int elapsed_ms) {
+void Room::drawTiles(Graphics& graphics) {
   for (int layer = 0; layer < (int)mTileLayers.size(); layer++) {
     for (int row = 0; row < (int)mTileLayers[layer].size(); row++) {
       for (int col = 0; col < (int)mTileLayers[layer][row].size(); col++) {
         if (Sprite* s = mTileLayers[layer][row][col]) {
-          s->drawNextFrame(col * kTileSize, row * kTileSize, graphics, elapsed_ms);
+          graphics.drawTile(s->getSpriteSheet(), s->getSpriteLocation(), col, row);
         }
       }
     }
   }
-
-  // using namespace Collision;
-  // for (int i = 0; i < mRows; i++) {
-  //   for (int j = 0; j < mColumns; j++) {
-  //     for (int k = 0; k < 4; k++) {
-  //       if (unsigned int dir = collisionTileMap[mCollisionMap[i][j]][k]) {
-  //         CollisionEdge e;
-  //         e.direction = (CollisionDirection)dir;
-  //         e.orientation = k % 2 ? Orientation::Y : Orientation::X;
-  //         e.originX = j * kTileSize + (k == 2 ? kTileSize : 0);
-  //         e.originY = i * kTileSize - (k == 3 ? kTileSize : 0);
-  //         e.length = kTileSize;
-
-  //         graphics.drawLine(
-  //           e.originX,
-  //           e.originY,
-  //           e.originX + (e.orientation == Orientation::Y ? e.length : 0),
-  //           e.originY + (e.orientation == Orientation::X ? e.length : 0)
-  //         );
-  //       }
-  //     }
-  //   }
-  // }
 }
 
 Room::Room(std::string name) {
@@ -108,7 +85,7 @@ Room::Room(std::string name) {
 
         std::string src = std::string(tileset->src);
         src = src.substr(src.find("/"));
-        Sprite* s = new Sprite(src, tileCol * kTileSize, tileRow * kTileSize, kTileSize, kTileSize);
+        Sprite* s = new Sprite(src, tileCol * Graphics::TILE_SIZE, tileRow * Graphics::TILE_SIZE, Graphics::TILE_SIZE, Graphics::TILE_SIZE);
         mTileLayers[layerIdx][row][col] = s;
       }
     }
@@ -135,8 +112,8 @@ void Room::initLayers(tinyxml2::XMLDocument& mapFile) {
     }
   } while ((l = l->NextSiblingElement("layer")));
 
-  mWidth = mColumns * kTileSize;
-  mHeight = mRows * kTileSize;
+  mWidth = mColumns * Graphics::TILE_SIZE;
+  mHeight = mRows * Graphics::TILE_SIZE;
 
   //init layers
   for (int i = 0; i < layers; i++) {
@@ -148,8 +125,8 @@ void Room::initLayers(tinyxml2::XMLDocument& mapFile) {
 void Room::getCollisionEdgesNear(int x, int y, Collision::Orientation orientation, std::vector<Collision::CollisionEdge*> &edges) {
   using namespace Collision;
   edges.clear();
-  x = std::max(x / kTileSize - kCollisionCheckTileRadius, 0);
-  y = std::max(y / kTileSize - kCollisionCheckTileRadius, 0);
+  x = std::max(x / Graphics::TILE_SIZE - kCollisionCheckTileRadius, 0);
+  y = std::max(y / Graphics::TILE_SIZE - kCollisionCheckTileRadius, 0);
   for (int i = y; i < mRows && i < y + (kCollisionCheckTileRadius * 2) + 1; i++) {
     for (int j = x; j < mColumns && j < x + (kCollisionCheckTileRadius * 2) + 1; j++) {
       // look up tile in tile map
@@ -160,9 +137,9 @@ void Room::getCollisionEdgesNear(int x, int y, Collision::Orientation orientatio
           CollisionEdge* e = new CollisionEdge();
           e->direction = (CollisionDirection)dir;
           e->orientation = k % 2 ? Orientation::Y : Orientation::X;
-          e->originX = j * kTileSize + (k == 2 ? kTileSize : 0);
-          e->originY = i * kTileSize + (k == 3 ? kTileSize : 0);
-          e->length = kTileSize;
+          e->originX = j * Graphics::TILE_SIZE + (k == 2 ? Graphics::TILE_SIZE : 0);
+          e->originY = i * Graphics::TILE_SIZE + (k == 3 ? Graphics::TILE_SIZE : 0);
+          e->length = Graphics::TILE_SIZE;
           edges.push_back(e);
         }
       }

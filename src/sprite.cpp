@@ -18,8 +18,16 @@ void Sprite::setSpriteSheet(std::string sheetName) {
   mSheetName = sheetName;
 }
 
+std::string Sprite::getSpriteSheet() {
+  return mSheetName;
+}
+
 void Sprite::setSpriteLocation(SDL_Rect location) {
   mSpriteRect = location;
+}
+
+SDL_Rect Sprite::getSpriteLocation() {
+  return mSpriteRect;
 }
 
 void Sprite::setFlip(SDL_RendererFlip flip) {
@@ -33,5 +41,5 @@ void Sprite::drawNextFrame(int x, int y, Graphics& graphics, int elapsed_ms) {
   dest.h = mSpriteRect.h;
   dest.x = x;
   dest.y = y;
-  graphics.drawTexture(mSheetName, mSpriteRect, dest, mFlip);
+  graphics.drawTexture(mRenderLayer, mSheetName, mSpriteRect, dest, mFlip);
 }

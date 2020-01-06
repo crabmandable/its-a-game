@@ -50,7 +50,7 @@ void AnimatedSprite::drawNextFrame(int x, int y, Graphics& graphics, int elapsed
   dest.x = x;
   dest.y = y;
 
-  graphics.drawTexture(mSheetName, src, dest, (SDL_RendererFlip)(anim->flip ^ mFlip));
+  graphics.drawTexture(mRenderLayer, mSheetName, src, dest, (SDL_RendererFlip)(anim->flip ^ mFlip));
 }
 
 void AnimatedSprite::defineAnimation(std::string name, Animation* animation)

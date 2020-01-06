@@ -8,12 +8,10 @@
 #include "collision.hpp"
 class Room {
   public:
-    static const int kTileSize{16};
-
     Room(std::string name);
     Room();
     ~Room();
-    void drawTiles(Graphics& graphics, int elapsed_ms);
+    void drawTiles(Graphics& graphics);
     void getCollisionEdgesNear(int x, int y, Collision::Orientation orientation, std::vector<Collision::CollisionEdge*> &edges);
 
   private:
