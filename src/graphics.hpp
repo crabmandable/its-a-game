@@ -44,6 +44,8 @@ class Graphics {
     SDL_Renderer* mRenderer{nullptr};
     SDL_Surface* mForegroundSurface{nullptr};
     SDL_Renderer* mForegroundRenderer{nullptr};
+    SDL_Surface* mBackgroundSurface{nullptr};
+    SDL_Renderer* mBackgroundRenderer{nullptr};
     std::map<std::string, SDL_Texture*> mTextures;
     int mWindowHeight, mWindowWidth;
     float mWindowScale;

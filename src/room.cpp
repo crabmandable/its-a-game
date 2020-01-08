@@ -15,10 +15,18 @@ void Room::drawTiles(Graphics& graphics) {
   }
 }
 
+void Room::drawBackground(Graphics& graphics) {
+  mBackground.draw(graphics);
+}
+
 Room::Room(std::string name) {
   using namespace tinyxml2;
+
+  std::string bgPath = "backgrounds/" + name + ".png";
+  mBackground = Background(bgPath);
+
   XMLDocument mapFile;
-  std::string mapPath = Graphics::getResourcePath("maps") + name;
+  std::string mapPath = Graphics::getResourcePath("maps") + name + ".tmx";
   std::cout << "loading map file: " << mapPath << std::endl;
   mapFile.LoadFile(mapPath.c_str());
   if (!mapFile.FirstChild()) {

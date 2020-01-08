@@ -9,6 +9,8 @@ Graphics::~Graphics() {
   }
   if (mForegroundRenderer) SDL_DestroyRenderer(mForegroundRenderer);
   if (mForegroundSurface) SDL_FreeSurface(mForegroundSurface);
+  if (mBackgroundRenderer) SDL_DestroyRenderer(mBackgroundRenderer);
+  if (mBackgroundSurface) SDL_FreeSurface(mBackgroundSurface);
   if (mRenderer) SDL_DestroyRenderer(mRenderer); 
   if (mWindow) SDL_DestroyWindow(mWindow);
 }
@@ -58,12 +60,27 @@ void Graphics::init() {
 
   SDL_SetWindowTitle(mWindow, "Zach's amazing game");
 
+
+  if (!(mBackgroundSurface = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0, 0, 0, 0))) {
+    std::cout << "Unable to create tile surface:" << SDL_GetError() << std::endl;
+    return;
+  }
+
+  Uint32 colorkey = SDL_MapRGB(mBackgroundSurface->format, 0, 0, 0);
+
+  SDL_SetColorKey(mBackgroundSurface, SDL_TRUE, colorkey);
+
+  if (!(mBackgroundRenderer = SDL_CreateSoftwareRenderer(mBackgroundSurface))) {
+    std::cout << "Unable to create tile renderer:" << SDL_GetError() << std::endl;
+    return;
+  }
+
   if (!(mForegroundSurface = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0, 0, 0, 0))) {
     std::cout << "Unable to create tile surface:" << SDL_GetError() << std::endl;
     return;
   }
 
-  Uint32 colorkey = SDL_MapRGB(mForegroundSurface->format, 0, 0, 0);
+  colorkey = SDL_MapRGB(mForegroundSurface->format, 0, 0, 0);
   SDL_SetColorKey(mForegroundSurface, SDL_TRUE, colorkey);
 
   if (!(mForegroundRenderer = SDL_CreateSoftwareRenderer(mForegroundSurface))) {
@@ -112,7 +129,9 @@ void Graphics::beginDraw() {
   updateWindowSize();
   SDL_SetRenderDrawColor(mRenderer, kBackgroundColor[0], kBackgroundColor[1], kBackgroundColor[2], kBackgroundColor[3]);
   SDL_SetRenderDrawColor(mForegroundRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+  SDL_SetRenderDrawColor(mBackgroundRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
   SDL_RenderClear(mRenderer);
+  SDL_RenderClear(mBackgroundRenderer);
   SDL_RenderClear(mForegroundRenderer);
 }
 
@@ -125,9 +144,13 @@ void Graphics::blitLayersToScreen() {
   dest.w = ceil(((float)SCREEN_WIDTH) * mWindowScale);
   dest.h = ceil(((float)SCREEN_HEIGHT) * mWindowScale);
 
-  SDL_Texture* t = SDL_CreateTextureFromSurface(mRenderer, mForegroundSurface);
-  SDL_RenderCopy(mRenderer, t, &src, &dest);
-  SDL_DestroyTexture(t);
+  SDL_Texture* bgTexture = SDL_CreateTextureFromSurface(mRenderer, mBackgroundSurface);
+  SDL_RenderCopy(mRenderer, bgTexture, &src, &dest);
+  SDL_DestroyTexture(bgTexture);
+
+  SDL_Texture* fgTexture = SDL_CreateTextureFromSurface(mRenderer, mForegroundSurface);
+  SDL_RenderCopy(mRenderer, fgTexture, &src, &dest);
+  SDL_DestroyTexture(fgTexture);
 }
 
 void Graphics::present() {
@@ -151,6 +174,8 @@ void Graphics::drawTexture(RenderLayer layer, std::string path, SDL_Rect& src, S
 
 SDL_Renderer* Graphics::getRenderer(RenderLayer layer) {
   switch(layer) {
+    case RenderLayer::Background:
+      return mBackgroundRenderer;
     case RenderLayer::Foreground:
     default:
       return mForegroundRenderer;

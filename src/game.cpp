@@ -9,7 +9,7 @@ Game::Game() {
   SDL_ShowCursor(SDL_DISABLE);
 
   mGraphics.init();
-  mRoom = new Room("TestMap.tmx");
+  mRoom = new Room("TestMap");
   // mPlayer.setPosition(236, 0);
 
   gameLoop();
@@ -61,6 +61,7 @@ void Game::update(int elapsed_ms) {
 void Game::draw(int elapsed_ms) {
   mGraphics.beginDraw();
 
+  mRoom->drawBackground(mGraphics);
   mRoom->drawTiles(mGraphics);
   mPlayer.draw(mGraphics, elapsed_ms);
   mGraphics.blitLayersToScreen();

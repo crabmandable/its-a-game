@@ -6,12 +6,14 @@
 #include "graphics.hpp"
 #include "tinyxml2.hpp"
 #include "collision.hpp"
+#include "background.hpp"
 class Room {
   public:
     Room(std::string name);
     Room();
     ~Room();
     void drawTiles(Graphics& graphics);
+    void drawBackground(Graphics& graphics);
     void getCollisionEdgesNear(int x, int y, Collision::Orientation orientation, std::vector<Collision::CollisionEdge*> &edges);
 
   private:
@@ -31,5 +33,6 @@ class Room {
     bool mDrawCollision = false;
     std::vector<std::vector<std::vector<Sprite*>>> mTileLayers;
     std::vector<std::vector<unsigned int>> mCollisionMap;
+    Background mBackground;
 };
 #endif // ROOM_H
