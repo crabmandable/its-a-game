@@ -131,11 +131,6 @@ void Player::updatePosition(int elapsed_ms)
   mYPos += (int)(mYVelocity * elapsed_ms);
   
   //todo hard coded screen size
-  if (mXPos < -4 || mXPos > 640) {
-    mXPos = 0;
-    mGrounded = false;
-    mXVelocity = 0;
-  }
   if (mYPos < -4 || mYPos > 360) {
     mYPos = 0;
     mGrounded = false;
@@ -154,6 +149,19 @@ Collision::CollisionEdge* Player::getCollisionEdge(int idx) {
 void Player::getPosition(int &x, int &y) {
   x = mXPos;
   y = mYPos;
+}
+
+void Player::getVelocity(float &x, float &y) {
+  x = mXVelocity;
+  y = mYVelocity;
+}
+
+bool Player::getFacing() {
+  return mIsFacingRight;
+}
+
+Player::State Player::getState() {
+  return mState;
 }
 
 void Player::incrementPosition(int x, int y) {

@@ -41,5 +41,8 @@ void Sprite::drawNextFrame(int x, int y, Graphics& graphics, int elapsed_ms) {
   dest.h = mSpriteRect.h;
   dest.x = x;
   dest.y = y;
-  graphics.drawTexture(mRenderLayer, mSheetName, mSpriteRect, dest, mFlip);
+
+  Graphics::DrawConfig config;
+  config.flip = mFlip;
+  graphics.drawTexture(mRenderLayer, mSheetName, mSpriteRect, dest, config);
 }

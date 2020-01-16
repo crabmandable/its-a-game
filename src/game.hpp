@@ -11,6 +11,7 @@
 #include "input.hpp"
 #include "player.hpp"
 #include "room.hpp"
+#include "camera.hpp"
 
 #ifndef DEBUG
 #define DEBUG true
@@ -40,6 +41,7 @@ class Game {
     Graphics mGraphics;
     Input mInput;
     Player mPlayer;
+    Camera mCamera;
     Room* mRoom;
 
 #ifdef DEBUG

@@ -13,6 +13,14 @@ class Graphics {
       Foreground = 'f'
     }; 
 
+    struct DrawConfig {
+      float paralaxX = 1;
+      float paralaxY = 1;
+      SDL_RendererFlip flip = SDL_FLIP_NONE;
+      bool repeatX = false;
+      bool repeatY = false;
+    };
+
     static const int TILE_SIZE = 16;
     static const int SCREEN_WIDTH = 640;
     static const int SCREEN_HEIGHT = 360;
@@ -28,17 +36,22 @@ class Graphics {
     ~Graphics();
 
     void init();
-    void drawTexture(RenderLayer layer, std::string path, SDL_Rect& src, SDL_Rect& dest, SDL_RendererFlip flip = SDL_FLIP_NONE);
+    void drawTexture(RenderLayer layer, std::string path, SDL_Rect& src, SDL_Rect& dest, DrawConfig& config);
     void drawTile(std::string tileSheetPath, SDL_Rect src, int columns, int row);
     void drawLine(int x1, int y1, int x2, int y2, bool blue = false);
+    void overlayColor(Uint8* color);
     void beginDraw();
     void present();
     void blitLayersToScreen();
+    void setViewPort(int x, int y);
 
   private:
+    void draw(RenderLayer layer, SDL_Texture* texture, SDL_Rect& src, SDL_Rect dest, DrawConfig& config);
     SDL_Renderer* getRenderer(RenderLayer layer);
     SDL_Texture* getTexture(std::string path, RenderLayer layer);
     void updateWindowSize();
+    int getViewPortXOffset();
+    int getViewPortYOffset();
 
     SDL_Window* mWindow{nullptr};
     SDL_Renderer* mRenderer{nullptr};
@@ -49,5 +62,8 @@ class Graphics {
     std::map<std::string, SDL_Texture*> mTextures;
     int mWindowHeight, mWindowWidth;
     float mWindowScale;
+
+    int mViewPortX = SCREEN_WIDTH / 2;
+    int mViewPortY = SCREEN_HEIGHT / 2;
 };
 #endif //GRAPHICS_H

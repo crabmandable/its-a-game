@@ -19,12 +19,40 @@ void Room::drawBackground(Graphics& graphics) {
   mBackground.draw(graphics);
 }
 
+void Room::drawOverlay(Graphics& graphics) {
+  graphics.overlayColor(mOverlayColor);
+}
+
 Room::Room(std::string name) {
   using namespace tinyxml2;
 
-  std::string bgPath = "backgrounds/" + name + ".png";
-  mBackground = Background(bgPath);
+  // load background
+  std::string bgPath = (Graphics::getResourcePath("backgrounds") + name + ".png");
+  unsigned int width, height;
+  FILE *f = fopen(bgPath.c_str(), "rb");
+  if (f == nullptr) {
+    std::cout << "Unable to load background file: " << bgPath << std::endl;
+  } else {
+    unsigned char buf[24];
+    fread(buf, 1, 24, f);
+    // PNG: the first frame is by definition an IHDR frame, which gives dimensions
+    if ( buf[0]==0x89 && buf[1]=='P' && buf[2]=='N' && buf[3]=='G' && buf[4]==0x0D && buf[5]==0x0A && buf[6]==0x1A && buf[7]==0x0A
+        && buf[12]=='I' && buf[13]=='H' && buf[14]=='D' && buf[15]=='R')
+    {
+      width = (buf[16]<<24) + (buf[17]<<16) + (buf[18]<<8) + (buf[19]<<0);
+      height = (buf[20]<<24) + (buf[21]<<16) + (buf[22]<<8) + (buf[23]<<0);
+    } else {
+      std::cout << "Background file is not png!" << std::endl << bgPath << std::endl;
+    }
 
+    fclose(f);
+  }
+
+  //TODO: dont use hardcoded number of background layers
+  int nLayers = 6;
+  mBackground = Background("backgrounds/" + name + ".png", nLayers, width, height / nLayers);
+
+  // load map
   XMLDocument mapFile;
   std::string mapPath = Graphics::getResourcePath("maps") + name + ".tmx";
   std::cout << "loading map file: " << mapPath << std::endl;
@@ -128,6 +156,15 @@ void Room::initLayers(tinyxml2::XMLDocument& mapFile) {
     mTileLayers.push_back(vector<vector<Sprite*>>(mRows, vector<Sprite*>(mColumns, nullptr)));
   }
   mCollisionMap = vector<vector<unsigned int>>(mRows, vector<unsigned int>(mColumns, 0x0));
+}
+
+void Room::adjustCamera(int &x, int &y) {
+  int w = mColumns * Graphics::TILE_SIZE;
+  int h = mRows * Graphics::TILE_SIZE;
+  x = std::max(x, Graphics::SCREEN_WIDTH / 2);
+  x = std::min(x, w - Graphics::SCREEN_WIDTH / 2);
+  y = std::max(x, Graphics::SCREEN_HEIGHT / 2);
+  y = std::min(x, h - Graphics::SCREEN_HEIGHT / 2);
 }
 
 void Room::getCollisionEdgesNear(int x, int y, Collision::Orientation orientation, std::vector<Collision::CollisionEdge*> &edges) {

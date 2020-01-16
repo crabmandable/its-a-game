@@ -58,6 +58,7 @@ void Graphics::init() {
     return;
   }
 
+  SDL_SetRenderDrawBlendMode(mRenderer, SDL_BLENDMODE_BLEND);
   SDL_SetWindowTitle(mWindow, "Zach's amazing game");
 
 
@@ -164,12 +165,63 @@ void Graphics::drawTile(std::string tileSheetPath, SDL_Rect src, int column, int
   src.w = src.h = dest.h = dest.w = TILE_SIZE;
   dest.x = column * TILE_SIZE;
   dest.y = row * TILE_SIZE;
-  SDL_RenderCopy(mForegroundRenderer, texture, &src, &dest);
+
+  DrawConfig config;
+  draw(RenderLayer::Foreground, texture, src, dest, config);
 }
 
-void Graphics::drawTexture(RenderLayer layer, std::string path, SDL_Rect& src, SDL_Rect& dest, SDL_RendererFlip flip) {
+void Graphics::drawTexture(RenderLayer layer, std::string path, SDL_Rect& src, SDL_Rect& dest, DrawConfig& config) {
   SDL_Texture* texture = getTexture(path, layer);
-  SDL_RenderCopyEx(getRenderer(layer), texture, &src, &dest, 0, NULL, flip);
+  draw(layer, texture, src, dest, config);
+}
+
+void Graphics::draw(RenderLayer layer, SDL_Texture* texture, SDL_Rect& src, SDL_Rect dest, DrawConfig& config) {
+  dest.x -= config.paralaxX * getViewPortXOffset();
+  dest.y -= config.paralaxY * getViewPortYOffset();
+
+  if (config.repeatX || config.repeatY)
+  {
+    int startY = (dest.y % dest.h) - dest.h;
+    int nY = ceil((abs(startY) + SCREEN_HEIGHT) / (float) dest.h);
+    int startX = (dest.x % dest.w) - dest.w;
+    int nX = ceil((abs(startX) + SCREEN_WIDTH) / (float) dest.w);
+
+    if (!config.repeatX && config.repeatY) //y repeat
+    {
+      if (dest.x < SCREEN_WIDTH && dest.x + dest.w > 0) {
+        dest.x = startX;
+        for (int i = 0; i < nX; i++) {
+          SDL_RenderCopyEx(getRenderer(layer), texture, &src, &dest, 0, NULL, config.flip);
+          dest.x += dest.w;
+        }
+      }
+    }
+    else if (!config.repeatY && config.repeatX) //x repeat
+    {
+      if (dest.y < SCREEN_HEIGHT && dest.y + dest.h > 0) {
+        dest.y = startY;
+        for (int i = 0; i < nX; i++) {
+          SDL_RenderCopyEx(getRenderer(layer), texture, &src, &dest, 0, NULL, config.flip);
+          dest.y += dest.h;
+        }
+      }
+    } else { // both repeat
+        dest.x = startX;
+        for (int i = 0; i < nX; i++) {
+          dest.y = startY;
+          for (int j = 0; j < nY; j++) {
+            SDL_RenderCopyEx(getRenderer(layer), texture, &src, &dest, 0, NULL, config.flip);
+            dest.y += dest.h;
+          }
+          dest.x += dest.w;
+        }
+    }
+  } //only bother drawing textures that are in the screen
+  else if ((dest.x < SCREEN_WIDTH && dest.x + dest.w > 0) && 
+      (dest.y < SCREEN_HEIGHT && dest.y + dest.h > 0))
+  {
+    SDL_RenderCopyEx(getRenderer(layer), texture, &src, &dest, 0, NULL, config.flip);
+  }
 }
 
 SDL_Renderer* Graphics::getRenderer(RenderLayer layer) {
@@ -182,6 +234,16 @@ SDL_Renderer* Graphics::getRenderer(RenderLayer layer) {
   }
 }
 
+void Graphics::overlayColor(Uint8* color) {
+  SDL_SetRenderDrawColor(mRenderer, color[0], color[1], color[2], color[3]);
+  SDL_Rect rect;
+  rect.y = rect.x = 0;
+  rect.w = SCREEN_WIDTH * mWindowScale;
+  rect.h = SCREEN_HEIGHT * mWindowScale;
+  SDL_RenderFillRect(mRenderer, &rect);
+  SDL_SetRenderDrawColor(mRenderer, kBackgroundColor[0], kBackgroundColor[1], kBackgroundColor[2], kBackgroundColor[3]);
+}
+
 void Graphics::drawLine(int x1, int y1, int x2, int y2, bool blue) {
   if (blue) {
     SDL_SetRenderDrawColor(mRenderer, kBlueLineColor[0], kBlueLineColor[1], kBlueLineColor[2], kBlueLineColor[3]);
@@ -190,4 +252,17 @@ void Graphics::drawLine(int x1, int y1, int x2, int y2, bool blue) {
   }
   SDL_RenderDrawLine(mRenderer, x1 * mWindowScale, y1 * mWindowScale, x2 * mWindowScale, y2 * mWindowScale);
   SDL_SetRenderDrawColor(mRenderer, kBackgroundColor[0], kBackgroundColor[1], kBackgroundColor[2], kBackgroundColor[3]);
+}
+
+void Graphics::setViewPort(int x, int y) {
+  mViewPortX = x;
+  mViewPortY = y;
+}
+
+int Graphics::getViewPortXOffset() {
+  return mViewPortX - SCREEN_WIDTH / 2;
+}
+
+int Graphics::getViewPortYOffset() {
+  return mViewPortY - SCREEN_HEIGHT / 2;
 }

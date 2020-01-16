@@ -55,6 +55,11 @@ void Game::gameLoop() {
 void Game::update(int elapsed_ms) {
   mPlayer.update(mInput, elapsed_ms);
   updatePlayerPosition(elapsed_ms);
+
+  mCamera.updateTarget(mPlayer, *mRoom);
+  mCamera.update(elapsed_ms);
+  mCamera.updateViewPort(mGraphics);
+
   mPlayer.updateAnimation();
 }
 
@@ -65,6 +70,7 @@ void Game::draw(int elapsed_ms) {
   mRoom->drawTiles(mGraphics);
   mPlayer.draw(mGraphics, elapsed_ms);
   mGraphics.blitLayersToScreen();
+  mRoom->drawOverlay(mGraphics);
 
 #if DEBUG
   if (mShouldDrawCollision) {

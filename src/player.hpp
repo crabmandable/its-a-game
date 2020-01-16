@@ -9,13 +9,13 @@
 
 class Player : public GameObject {
   public:
-    const float kAcceleration = 0.006;
+    const float kAcceleration = 0.003;
     const float kDeceleration = 0.00115;
     const float kJumpDeceleration = 0.0009;
-    const float kMaxSpeed = 0.17;
+    const float kMaxSpeed = 0.13;
     const float kJumpForce = 0.25;
     const float kJumpLength_ms = 250;
-    const float kGravity = 0.0028;
+    const float kGravity = 0.0023;
 
     const int kCollisionXLength = 35;
     const int kCollisionYLength = 8;
@@ -45,6 +45,9 @@ class Player : public GameObject {
     void incrementPosition(int x, int y);
     void setPosition(int x, int y);
     void getPosition(int &x, int &y);
+    void getVelocity(float &x, float &y);
+    bool getFacing();
+    State getState();
     void isGrounded(bool grounded);
   protected:
     Sprite* getSprite();
