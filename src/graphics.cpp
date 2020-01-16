@@ -91,7 +91,7 @@ void Graphics::init() {
 }
 
 SDL_Texture* Graphics::getTexture(std::string path, RenderLayer layer) {
-  std::string key = ((char)layer) + "|" + path;
+  std::string key = std::string(1, ((char)layer)) + "|" + path;
 
   if (mTextures.find(key) != mTextures.end()) {
     return mTextures[key];

@@ -28,7 +28,8 @@ Room::Room(std::string name) {
 
   // load background
   std::string bgPath = (Graphics::getResourcePath("backgrounds") + name + ".png");
-  unsigned int width, height;
+  unsigned int width = 0;
+  unsigned int height = 0;
   FILE *f = fopen(bgPath.c_str(), "rb");
   if (f == nullptr) {
     std::cout << "Unable to load background file: " << bgPath << std::endl;
