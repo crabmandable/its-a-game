@@ -129,13 +129,6 @@ void Player::updatePosition(int elapsed_ms)
 {
   mXPos += (int)(mXVelocity * elapsed_ms);
   mYPos += (int)(mYVelocity * elapsed_ms);
-  
-  //todo hard coded screen size
-  if (mYPos < -4 || mYPos > 360) {
-    mYPos = 0;
-    mGrounded = false;
-    mYVelocity = 0;
-  }
 }
 
 Sprite* Player::getSprite() {
@@ -226,3 +219,14 @@ void Player::isGrounded(bool grounded) {
   }
 }
 
+void Player::setCheckpoint(Checkpoint* checkpoint) {
+  mCheckpoint = checkpoint;
+}
+
+void Player::goToCheckpoint() {
+  if (!mCheckpoint) return;
+
+  int x, y;
+  mCheckpoint->getSpawn(x, y);
+  setPosition(x, y);
+}

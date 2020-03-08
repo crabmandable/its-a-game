@@ -17,6 +17,7 @@ class Camera {
     void updateTarget(Player& player, Room& room);
     void update(int elapsed_ms);
     void updateViewPort(Graphics& graphics);
+    void setPosition(int x, int y);
   private:
     float mXVelocity = 0;
     float mYVelocity = 0;

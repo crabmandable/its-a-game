@@ -9,14 +9,25 @@ Game::Game() {
   SDL_ShowCursor(SDL_DISABLE);
 
   mGraphics.init();
-  mRoom = new Room("TestMap");
-  // mPlayer.setPosition(236, 0);
+
+  loadRoom("TestMap");
 
   gameLoop();
 }
 
 Game::~Game() {
   SDL_Quit();
+}
+
+void Game::loadRoom(std::string name) {
+  mRoom = new Room(name);
+
+  // place player & camera in room
+  int x, y;
+  mRoom->getStart(x, y);
+  mPlayer.setPosition(x, y);
+  mRoom->adjustCamera(x, y);
+  mCamera.setPosition(x, y);
 }
 
 void Game::gameLoop() {
@@ -55,6 +66,8 @@ void Game::gameLoop() {
 void Game::update(int elapsed_ms) {
   mPlayer.update(mInput, elapsed_ms);
   updatePlayerPosition(elapsed_ms);
+
+  mRoom->affectPlayer(mPlayer);
 
   mCamera.updateTarget(mPlayer, *mRoom);
   mCamera.update(elapsed_ms);

@@ -26,6 +26,7 @@ class Game {
 
   private:
     void gameLoop();
+    void loadRoom(std::string name);
     void update(int elapsed_ms);
     void draw(int elapsed_ms);
     void handleInput();

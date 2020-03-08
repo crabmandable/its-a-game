@@ -51,6 +51,8 @@ Room::Room(std::string name) {
 
   //TODO: dont use hardcoded number of background layers
   int nLayers = 6;
+  std::cout << "Background w,h:" <<  width << "," << height / nLayers << std::endl;
+  std::cout << "Background nLayers:" << nLayers << std::endl;
   mBackground = Background("backgrounds/" + name + ".png", nLayers, width, height / nLayers);
 
   // load map
@@ -87,7 +89,6 @@ Room::Room(std::string name) {
     const char* name;
     layer->QueryStringAttribute("name", &name);
     std::cout << "Loading layer: " << name << std::endl;
-    bool isCollisionLayer = 0 == strcmp("collision", name);
 
     std::stringstream bgData(layer->FirstChildElement("data")->GetText());
     std::string line;
@@ -111,19 +112,40 @@ Room::Room(std::string name) {
 
         TileSet* tileset = tileSets[i];
 
-        if (isCollisionLayer) {
-          mCollisionMap[row][col] = gID + 1 - tileset->firstGID;
-          if (!mDrawCollision) continue;
+        if (isDrawnLayer(name))
+        {
+          int id = gID - tileset->firstGID;
+          int tileRow = id / tileset->columns;
+          int tileCol = id % tileset->columns;
+
+          std::string src = std::string(tileset->src);
+          src = src.substr(src.find("/"));
+          Sprite* s = new Sprite(
+            src,
+            tileCol * Graphics::TILE_SIZE, tileRow * Graphics::TILE_SIZE,
+            Graphics::TILE_SIZE, Graphics::TILE_SIZE
+          );
+
+          mTileLayers[layerIdx][row][col] = s;
+        }
+        else
+        {
+          if (0 == strcmp("collision", name)) {
+            mCollisionMap[row][col] = gID + 1 - tileset->firstGID;
+          } else if (0 == strcmp("checkpoints", name)) {
+            Directive d = Directive::None;
+            if (gID >= tileset->firstGID) {
+               d = (Directive)(gID - tileset->firstGID);
+            }
+            mDirectivesMap[row][col] = d;
+          } else if (0 == strcmp("start", name)) {
+            if (gID) {
+              mStartX = col * Graphics::TILE_SIZE;
+              mStartY = row * Graphics::TILE_SIZE;
+            }
+          }
         }
 
-        int id = gID - tileset->firstGID;
-        int tileRow = id / tileset->columns;
-        int tileCol = id % tileset->columns;
-
-        std::string src = std::string(tileset->src);
-        src = src.substr(src.find("/"));
-        Sprite* s = new Sprite(src, tileCol * Graphics::TILE_SIZE, tileRow * Graphics::TILE_SIZE, Graphics::TILE_SIZE, Graphics::TILE_SIZE);
-        mTileLayers[layerIdx][row][col] = s;
       }
     }
     layerIdx++;
@@ -131,6 +153,45 @@ Room::Room(std::string name) {
 
   for (auto t: tileSets) {
     delete t;
+  }
+
+  initDirectives();
+}
+
+void Room::getStart(int& x, int& y) {
+  x = mStartX;
+  y = mStartY;
+}
+
+void Room::initDirectives() {
+  for (unsigned int i = 0; i < mDirectivesMap.size(); i++) {
+    for (unsigned int j = 0; j < mDirectivesMap[i].size(); j++) {
+      switch(mDirectivesMap[i][j]) {
+        case Directive::Spawn: {
+          // find right edge
+          int rEdge = j;
+          while (mDirectivesMap[i][++rEdge] == Directive::Checkpoint){}
+          rEdge--;
+          //find tEdgeft edge
+          int lEdge = j;
+          while (mDirectivesMap[i][--lEdge] == Directive::Checkpoint){}
+          lEdge++;
+          //find top edge
+          int tEdge = i;
+          while (mDirectivesMap[--tEdge][j] == Directive::Checkpoint){}
+          tEdge++;
+          //find bottom edge
+          int bEdge = i;
+          while (mDirectivesMap[++bEdge][j] == Directive::Checkpoint){}
+          bEdge--;
+
+          mCheckpoints.push_back(new Checkpoint(lEdge, tEdge, rEdge - lEdge, bEdge - tEdge, rEdge - j, i - tEdge));
+          break;
+        }
+        default:
+          break;
+      }
+    }
   }
 }
 
@@ -144,19 +205,26 @@ void Room::initLayers(tinyxml2::XMLDocument& mapFile) {
   do {
     const char* name;
     l->QueryStringAttribute("name", &name);
-    if (mDrawCollision || 0 != strcmp(name, "collision")) {
+    if (isDrawnLayer(name)) {
       layers++;
     }
   } while ((l = l->NextSiblingElement("layer")));
 
   mWidth = mColumns * Graphics::TILE_SIZE;
   mHeight = mRows * Graphics::TILE_SIZE;
+  std::cout << "map size: " << mWidth << "," << mHeight << std::endl;
 
   //init layers
   for (int i = 0; i < layers; i++) {
     mTileLayers.push_back(vector<vector<Sprite*>>(mRows, vector<Sprite*>(mColumns, nullptr)));
   }
   mCollisionMap = vector<vector<unsigned int>>(mRows, vector<unsigned int>(mColumns, 0x0));
+  mDirectivesMap = vector<vector<Directive>>(mRows, vector<Directive>(mColumns, Directive::None));
+}
+
+bool Room::isDrawnLayer(const char* layerName) {
+  auto it = std::find(IGNORED_LAYERS.begin(), IGNORED_LAYERS.end(), layerName);
+  return it == IGNORED_LAYERS.end();
 }
 
 void Room::adjustCamera(int &x, int &y) {
@@ -164,8 +232,18 @@ void Room::adjustCamera(int &x, int &y) {
   int h = mRows * Graphics::TILE_SIZE;
   x = std::max(x, Graphics::SCREEN_WIDTH / 2);
   x = std::min(x, w - Graphics::SCREEN_WIDTH / 2);
-  y = std::max(x, Graphics::SCREEN_HEIGHT / 2);
-  y = std::min(x, h - Graphics::SCREEN_HEIGHT / 2);
+  y = std::max(y, Graphics::SCREEN_HEIGHT / 2);
+  y = std::min(y, h - Graphics::SCREEN_HEIGHT / 2);
+}
+
+void Room::updateCheckpoint(Player& player) {
+  int x, y;
+  player.getPosition(x, y);
+  for (auto cp : mCheckpoints) {
+    if (cp->pointIsInCheckpoint(x, y)) {
+      player.setCheckpoint(cp);
+    }
+  }
 }
 
 void Room::getCollisionEdgesNear(int x, int y, Collision::Orientation orientation, std::vector<Collision::CollisionEdge*> &edges) {
@@ -190,6 +268,17 @@ void Room::getCollisionEdgesNear(int x, int y, Collision::Orientation orientatio
         }
       }
     }
+  }
+}
+
+void Room::affectPlayer(Player& player) {
+  int x, y;
+  player.getPosition(x, y);
+  //outside of map - should go back to checkp
+  if (x >= mWidth || x < 0 || y >= mHeight || y < 0) {
+    player.goToCheckpoint();
+  } else {
+    updateCheckpoint(player);
   }
 }
 

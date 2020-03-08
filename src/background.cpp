@@ -19,6 +19,6 @@ void Background::draw(Graphics& graphics) {
   for (int i = 0; i < mNumberOfLayers; i++) {
     config.paralaxX = i * (1.0 / mNumberOfLayers);
     graphics.drawTexture(Graphics::RenderLayer::Background, mSheetName, src, dest, config);
-    src.y += Graphics::SCREEN_HEIGHT;
+    src.y += mHeight;
   }
 }

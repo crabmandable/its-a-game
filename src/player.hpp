@@ -6,6 +6,7 @@
 #include <algorithm>
 #include "animated_sprite.hpp"
 #include "collision.hpp"
+#include "checkpoint.hpp"
 
 class Player : public GameObject {
   public:
@@ -49,6 +50,9 @@ class Player : public GameObject {
     bool getFacing();
     State getState();
     void isGrounded(bool grounded);
+    void goToCheckpoint();
+
+    void setCheckpoint(Checkpoint* checkpoint);
   protected:
     Sprite* getSprite();
 
@@ -65,6 +69,7 @@ class Player : public GameObject {
 
     int mDirection = 0;
     int mJumpElapsed = 0;
+    Checkpoint* mCheckpoint = nullptr;
 
     Collision::CollisionEdge mCollisionEdges[4];
 };
