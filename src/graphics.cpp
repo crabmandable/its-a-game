@@ -62,7 +62,7 @@ void Graphics::init() {
   SDL_SetWindowTitle(mWindow, "Zach's amazing game");
 
 
-  if (!(mBackgroundSurface = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0, 0, 0, 0))) {
+  if (!(mBackgroundSurface = SDL_CreateRGBSurface(0, SCREEN_WIDTH + OVERBUFFER * 2, SCREEN_HEIGHT + OVERBUFFER * 2, 32, 0, 0, 0, 0))) {
     std::cout << "Unable to create tile surface:" << SDL_GetError() << std::endl;
     return;
   }
@@ -76,7 +76,7 @@ void Graphics::init() {
     return;
   }
 
-  if (!(mForegroundSurface = SDL_CreateRGBSurface(0, SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0, 0, 0, 0))) {
+  if (!(mForegroundSurface = SDL_CreateRGBSurface(0,  SCREEN_WIDTH + OVERBUFFER * 2, SCREEN_HEIGHT + OVERBUFFER * 2, 32, 0, 0, 0, 0))) {
     std::cout << "Unable to create tile surface:" << SDL_GetError() << std::endl;
     return;
   }
@@ -138,12 +138,21 @@ void Graphics::beginDraw() {
 
 void Graphics::blitLayersToScreen() {
   SDL_Rect src, dest;
-  dest.x = dest.y = src.y = src.x = 0;
-  src.w = SCREEN_WIDTH;
-  src.h = SCREEN_HEIGHT;
+  src.y = src.x = 0;
 
-  dest.w = ceil(((float)SCREEN_WIDTH) * mWindowScale);
-  dest.h = ceil(((float)SCREEN_HEIGHT) * mWindowScale);
+  src.w = SCREEN_WIDTH + OVERBUFFER * 2;
+  src.h = SCREEN_HEIGHT + OVERBUFFER * 2;
+
+  dest.w = ceil(((float)src.w + OVERBUFFER * 2) * mWindowScale);
+  dest.h = ceil(((float)src.h + OVERBUFFER * 2) * mWindowScale);
+  
+  // camera position is actually a decimal
+  // we need to nudge after scaling to allow subpixel camera movement
+  float xOffset = getViewPortOffset().x - floor(getViewPortOffset().x); 
+  dest.x = (1 - xOffset > xOffset ? -xOffset : 1 - xOffset) * mWindowScale - OVERBUFFER;
+
+  float yOffset = getViewPortOffset().y - floor(getViewPortOffset().y); 
+  dest.y = (1 - yOffset > yOffset ? -yOffset : 1 - yOffset) * mWindowScale - OVERBUFFER;
 
   SDL_Texture* bgTexture = SDL_CreateTextureFromSurface(mRenderer, mBackgroundSurface);
   SDL_RenderCopy(mRenderer, bgTexture, &src, &dest);

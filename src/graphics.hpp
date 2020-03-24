@@ -27,6 +27,7 @@ class Graphics {
     static const int SCREEN_HEIGHT = 360;
     static const int HEIGHT_RATIO = 9;
     static const int WIDTH_RATIO = 16;
+    static const int OVERBUFFER = 2;
     const int kLineColor[4] = {255, 0, 0, SDL_ALPHA_OPAQUE};
     const int kBlueLineColor[4] = {0, 0, 255, SDL_ALPHA_OPAQUE};
     const int kBackgroundColor[4] = {20, 50, 128, SDL_ALPHA_OPAQUE};

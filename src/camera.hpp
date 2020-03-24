@@ -6,6 +6,10 @@
 class Camera {
   public:
     Velocity kMaxVelocity{0.21, 0.30};
+
+    // pixels moved per frame = kMinVelocity * 16ms
+    // equals about a minimum movement of 1/5th pixel per frame
+    Velocity kMinVelocity{0.01, 0.01};
     Acceleration kDeccelerationFactor{0.01, 0.004};
 
     // how far ahead the camera should center when moving
@@ -14,7 +18,7 @@ class Camera {
     void updateTarget(Player& player, Room& room);
     void update(int elapsed_ms);
     void updateViewPort(Graphics& graphics);
-    void setPosition(Position pos);
+    void setPosition(FloatPosition pos);
   private:
     Velocity mVelocity;
     FloatPosition mPosition{Graphics::SCREEN_WIDTH / 2, Graphics::SCREEN_HEIGHT / 2};
