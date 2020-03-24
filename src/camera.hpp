@@ -17,7 +17,7 @@ class Camera {
     void setPosition(Position pos);
   private:
     Velocity mVelocity;
-    Position mPosition{Graphics::SCREEN_WIDTH / 2, Graphics::SCREEN_HEIGHT / 2};
-    Position mTarget{Graphics::SCREEN_WIDTH / 2, Graphics::SCREEN_HEIGHT / 2};
+    FloatPosition mPosition{Graphics::SCREEN_WIDTH / 2, Graphics::SCREEN_HEIGHT / 2};
+    FloatPosition mTarget{Graphics::SCREEN_WIDTH / 2, Graphics::SCREEN_HEIGHT / 2};
 };
 #endif

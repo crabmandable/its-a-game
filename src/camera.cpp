@@ -13,19 +13,17 @@ void Camera::update(int elapsed_ms) {
 
   mVelocity = Velocity::min(kMaxVelocity,  (Velocity)((mTarget - mPosition).absolute()) * kDeccelerationFactor);
   FloatPosition travelVector = FloatPosition::max(0.5f, mVelocity * elapsed_ms);
-  FloatPosition floatPos = mPosition;
-  FloatPosition target = mTarget;
 
   if (mTarget.x < mPosition.x) {
-    mPosition.x = std::max(target.x, std::round(floatPos.x - travelVector.x));
+    mPosition.x = std::max(mTarget.x, std::round(mPosition.x - travelVector.x));
   } else if (mTarget.x > mPosition.x) {
-    mPosition.x = std::min(target.x, std::round(floatPos.x + travelVector.x));
+    mPosition.x = std::min(mTarget.x, std::round(mPosition.x + travelVector.x));
   }
 
   if (mTarget.y < mPosition.y) {
-    mPosition.y = std::max(target.y, std::round(floatPos.y - travelVector.y));
+    mPosition.y = std::max(mTarget.y, std::round(mPosition.y - travelVector.y));
   } else if (mTarget.y > mPosition.y) {
-    mPosition.y = std::min(target.y, std::round(floatPos.y + travelVector.y));
+    mPosition.y = std::min(mTarget.y, std::round(mPosition.y + travelVector.y));
   }
 }
 

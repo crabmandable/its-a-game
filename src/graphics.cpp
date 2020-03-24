@@ -176,8 +176,8 @@ void Graphics::drawTexture(RenderLayer layer, std::string path, Rect src, Rect d
 }
 
 void Graphics::draw(RenderLayer layer, SDL_Texture* texture, SDL_Rect src, SDL_Rect dest, DrawConfig& config) {
-  dest.x -= config.paralaxX * getViewPortOffset().x;
-  dest.y -= config.paralaxY * getViewPortOffset().y;
+  dest.x -= config.paralaxX * std::round(getViewPortOffset().x);
+  dest.y -= config.paralaxY * std::round(getViewPortOffset().y);
 
   if (config.repeatX || config.repeatY)
   {
@@ -261,11 +261,11 @@ void Graphics::drawLine(Position p1, Position p2, bool blue) {
   SDL_SetRenderDrawColor(mRenderer, kBackgroundColor[0], kBackgroundColor[1], kBackgroundColor[2], kBackgroundColor[3]);
 }
 
-void Graphics::setViewPort(Position pos) {
+void Graphics::setViewPort(FloatPosition pos) {
   mViewPort = pos;
 }
 
-Position Graphics::getViewPortOffset() {
-  return Position(mViewPort.x - SCREEN_WIDTH / 2, mViewPort.y - SCREEN_HEIGHT / 2);
+FloatPosition Graphics::getViewPortOffset() {
+  return FloatPosition(mViewPort.x - SCREEN_WIDTH / 2, mViewPort.y - SCREEN_HEIGHT / 2);
 }
 

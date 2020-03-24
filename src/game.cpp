@@ -23,7 +23,7 @@ void Game::loadRoom(std::string name) {
   mRoom = new Room(name);
 
   // place player & camera in room
-  Position start = mRoom->getStart();
+  FloatPosition start = mRoom->getStart();
   mPlayer.setPosition(start);
   mRoom->adjustCameraTarget(start);
   mCamera.setPosition(start);

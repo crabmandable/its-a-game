@@ -44,14 +44,14 @@ class Graphics {
     void beginDraw();
     void present();
     void blitLayersToScreen();
-    void setViewPort(Position pos);
+    void setViewPort(FloatPosition pos);
 
   private:
     void draw(RenderLayer layer, SDL_Texture* texture, SDL_Rect src, SDL_Rect dest, DrawConfig& config);
     SDL_Renderer* getRenderer(RenderLayer layer);
     SDL_Texture* getTexture(std::string path, RenderLayer layer);
     void updateWindowSize();
-    Position getViewPortOffset();
+    FloatPosition getViewPortOffset();
 
     SDL_Window* mWindow{nullptr};
     SDL_Renderer* mRenderer{nullptr};
@@ -63,6 +63,6 @@ class Graphics {
     int mWindowHeight, mWindowWidth;
     float mWindowScale;
 
-    Position mViewPort{SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2};
+    FloatPosition mViewPort{SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2};
 };
 #endif //GRAPHICS_H

@@ -30,7 +30,7 @@ class Room {
     void drawOverlay(Graphics& graphics);
     Position getStart();
     void getCollisionEdgesNear(Position pos, Collision::Orientation orientation, std::vector<Collision::CollisionEdge*> &edges);
-    void adjustCameraTarget(Position& target);
+    void adjustCameraTarget(FloatPosition& target);
     void affectPlayer(Player& player);
 
   private:

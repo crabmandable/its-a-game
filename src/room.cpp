@@ -205,7 +205,7 @@ void Room::initLayers(tinyxml2::XMLDocument& mapFile) {
   int layers = 0;
   tinyxml2::XMLElement* l = mapFile.FirstChildElement("map")->FirstChildElement("layer");
   do {
-    const char* name;
+    const char* name = "";
     l->QueryStringAttribute("name", &name);
     if (isDrawnLayer(name)) {
       layers++;
@@ -229,12 +229,12 @@ bool Room::isDrawnLayer(const char* layerName) {
   return it == IGNORED_LAYERS.end();
 }
 
-void Room::adjustCameraTarget(Position& target) {
+void Room::adjustCameraTarget(FloatPosition& target) {
   int w = mColumns * Graphics::TILE_SIZE;
   int h = mRows * Graphics::TILE_SIZE;
 
-  target = Position::max(target, {Graphics::SCREEN_WIDTH / 2, Graphics::SCREEN_HEIGHT / 2});
-  target = Position::min(target, {w - Graphics::SCREEN_WIDTH / 2, h - Graphics::SCREEN_HEIGHT / 2});
+  target = FloatPosition::max(target, {Graphics::SCREEN_WIDTH / 2, Graphics::SCREEN_HEIGHT / 2});
+  target = FloatPosition::min(target, {(float)w - Graphics::SCREEN_WIDTH / 2, (float)h - Graphics::SCREEN_HEIGHT / 2});
 }
 
 void Room::updateCheckpoint(Player& player) {
