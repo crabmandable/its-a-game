@@ -3,9 +3,9 @@ DEBUG ?= false
 CXX := g++
 CXXDEFINES += -DDEBUG=$(DEBUG)
 MKDIR := mkdir -p
-CXXFLAGS += `pkg-config --cflags sdl2 SDL2_image`
+CXXFLAGS += `pkg-config --cflags sdl2 SDL2_image tinyxml2`
 CXXFLAGS += -Wall -Werror -Wextra -pedantic -std=c++14 -g $(CXXDEFINES)
-LDFLAGS += `pkg-config --libs sdl2 SDL2_image`
+LDFLAGS += `pkg-config --libs sdl2 SDL2_image tinyxml2`
 LDFLAGS += -lm
 PROG := bin/game
 OBJS := $(patsubst src/%.cpp,obj/%.o, $(wildcard src/*.cpp))

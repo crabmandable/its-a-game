@@ -5,9 +5,9 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <tinyxml2.h>
 #include "game_object.hpp"
 #include "graphics.hpp"
-#include "tinyxml2.hpp"
 #include "collision.hpp"
 #include "background.hpp"
 #include "checkpoint.hpp"
