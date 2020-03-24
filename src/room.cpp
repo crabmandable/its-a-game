@@ -53,7 +53,7 @@ Room::Room(std::string name) {
   int nLayers = 6;
   std::cout << "Background w,h:" <<  width << "," << height / nLayers << std::endl;
   std::cout << "Background nLayers:" << nLayers << std::endl;
-  mBackground = Background("backgrounds/" + name + ".png", nLayers, width, height / nLayers);
+  mBackground = Background("backgrounds/" + name + ".png", nLayers, {(int)width, (int)height / nLayers});
 
   // load map
   XMLDocument mapFile;
@@ -122,8 +122,8 @@ Room::Room(std::string name) {
           src = src.substr(src.find("/"));
           Sprite* s = new Sprite(
             src,
-            tileCol * Graphics::TILE_SIZE, tileRow * Graphics::TILE_SIZE,
-            Graphics::TILE_SIZE, Graphics::TILE_SIZE
+            {{tileCol * Graphics::TILE_SIZE, tileRow * Graphics::TILE_SIZE},
+            {Graphics::TILE_SIZE, Graphics::TILE_SIZE}}
           );
 
           mTileLayers[layerIdx][row][col] = s;
@@ -140,8 +140,8 @@ Room::Room(std::string name) {
             mDirectivesMap[row][col] = d;
           } else if (0 == strcmp("start", name)) {
             if (gID) {
-              mStartX = col * Graphics::TILE_SIZE;
-              mStartY = row * Graphics::TILE_SIZE;
+              mStart.x = col * Graphics::TILE_SIZE;
+              mStart.y = row * Graphics::TILE_SIZE;
             }
           }
         }
@@ -158,9 +158,8 @@ Room::Room(std::string name) {
   initDirectives();
 }
 
-void Room::getStart(int& x, int& y) {
-  x = mStartX;
-  y = mStartY;
+Position Room::getStart() {
+  return mStart;
 }
 
 void Room::initDirectives() {
@@ -185,7 +184,10 @@ void Room::initDirectives() {
           while (mDirectivesMap[++bEdge][j] == Directive::Checkpoint){}
           bEdge--;
 
-          mCheckpoints.push_back(new Checkpoint(lEdge, tEdge, rEdge - lEdge, bEdge - tEdge, rEdge - j, i - tEdge));
+          Position origin = Position(lEdge, tEdge) * Graphics::TILE_SIZE;
+          Size size = Size(rEdge - lEdge, bEdge - tEdge) * Graphics::TILE_SIZE;
+          Position spawnOffset = Position(rEdge - j, i - tEdge) * Graphics::TILE_SIZE;
+          mCheckpoints.push_back(new Checkpoint({origin, size}, spawnOffset));
           break;
         }
         default:
@@ -210,9 +212,9 @@ void Room::initLayers(tinyxml2::XMLDocument& mapFile) {
     }
   } while ((l = l->NextSiblingElement("layer")));
 
-  mWidth = mColumns * Graphics::TILE_SIZE;
-  mHeight = mRows * Graphics::TILE_SIZE;
-  std::cout << "map size: " << mWidth << "," << mHeight << std::endl;
+  mSize.w = mColumns * Graphics::TILE_SIZE;
+  mSize.h = mRows * Graphics::TILE_SIZE;
+  std::cout << "map size: " << mSize.w << "," << mSize.h << std::endl;
 
   //init layers
   for (int i = 0; i < layers; i++) {
@@ -227,32 +229,29 @@ bool Room::isDrawnLayer(const char* layerName) {
   return it == IGNORED_LAYERS.end();
 }
 
-void Room::adjustCamera(int &x, int &y) {
+void Room::adjustCameraTarget(Position& target) {
   int w = mColumns * Graphics::TILE_SIZE;
   int h = mRows * Graphics::TILE_SIZE;
-  x = std::max(x, Graphics::SCREEN_WIDTH / 2);
-  x = std::min(x, w - Graphics::SCREEN_WIDTH / 2);
-  y = std::max(y, Graphics::SCREEN_HEIGHT / 2);
-  y = std::min(y, h - Graphics::SCREEN_HEIGHT / 2);
+
+  target = Position::max(target, {Graphics::SCREEN_WIDTH / 2, Graphics::SCREEN_HEIGHT / 2});
+  target = Position::min(target, {w - Graphics::SCREEN_WIDTH / 2, h - Graphics::SCREEN_HEIGHT / 2});
 }
 
 void Room::updateCheckpoint(Player& player) {
-  int x, y;
-  player.getPosition(x, y);
   for (auto cp : mCheckpoints) {
-    if (cp->pointIsInCheckpoint(x, y)) {
+    if (cp->pointIsInCheckpoint(player.getPosition())) {
       player.setCheckpoint(cp);
     }
   }
 }
 
-void Room::getCollisionEdgesNear(int x, int y, Collision::Orientation orientation, std::vector<Collision::CollisionEdge*> &edges) {
+void Room::getCollisionEdgesNear(Position pos, Collision::Orientation orientation, std::vector<Collision::CollisionEdge*> &edges) {
   using namespace Collision;
   edges.clear();
-  x = std::max(x / Graphics::TILE_SIZE - kCollisionCheckTileRadius, 0);
-  y = std::max(y / Graphics::TILE_SIZE - kCollisionCheckTileRadius, 0);
-  for (int i = y; i < mRows && i < y + (kCollisionCheckTileRadius * 2) + 1; i++) {
-    for (int j = x; j < mColumns && j < x + (kCollisionCheckTileRadius * 2) + 1; j++) {
+  pos = Position::max(0, pos / Graphics::TILE_SIZE - kCollisionCheckTileRadius);
+
+  for (int i = pos.y; i < mRows && i < pos.y + (kCollisionCheckTileRadius * 2) + 1; i++) {
+    for (int j = pos.x; j < mColumns && j < pos.x + (kCollisionCheckTileRadius * 2) + 1; j++) {
       // look up tile in tile map
       for (int k = orientation == Orientation::X ? 0 : 1; k < 4; k+=2) {
       // (void)orientation;
@@ -261,8 +260,8 @@ void Room::getCollisionEdgesNear(int x, int y, Collision::Orientation orientatio
           CollisionEdge* e = new CollisionEdge();
           e->direction = (CollisionDirection)dir;
           e->orientation = k % 2 ? Orientation::Y : Orientation::X;
-          e->originX = j * Graphics::TILE_SIZE + (k == 2 ? Graphics::TILE_SIZE : 0);
-          e->originY = i * Graphics::TILE_SIZE + (k == 3 ? Graphics::TILE_SIZE : 0);
+          e->origin.x = j * Graphics::TILE_SIZE + (k == 2 ? Graphics::TILE_SIZE : 0);
+          e->origin.y = i * Graphics::TILE_SIZE + (k == 3 ? Graphics::TILE_SIZE : 0);
           e->length = Graphics::TILE_SIZE;
           edges.push_back(e);
         }
@@ -272,10 +271,9 @@ void Room::getCollisionEdgesNear(int x, int y, Collision::Orientation orientatio
 }
 
 void Room::affectPlayer(Player& player) {
-  int x, y;
-  player.getPosition(x, y);
+  Position pos = player.getPosition();
   //outside of map - should go back to checkp
-  if (x >= mWidth || x < 0 || y >= mHeight || y < 0) {
+  if (pos.x >= mSize.w || pos.x < 0 || pos.y >= mSize.h || pos.y < 0) {
     player.goToCheckpoint();
   } else {
     updateCheckpoint(player);

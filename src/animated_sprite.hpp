@@ -8,10 +8,12 @@
 #include "graphics.hpp"
 #include "animation.hpp"
 #include "sprite.hpp"
+#include "geometry.hpp"
+
 class AnimatedSprite : public Sprite {
   public:
     void defineAnimation(std::string name, Animation* animation);
-    void drawNextFrame(int x, int y, Graphics& graphics, int elapsed_ms);
+    void drawNextFrame(Position pos, Graphics& graphics, int elapsed_ms);
     void play(std::string animationName);
     void pause();
 

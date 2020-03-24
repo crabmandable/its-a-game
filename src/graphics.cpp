@@ -158,11 +158,11 @@ void Graphics::present() {
   SDL_RenderPresent(mRenderer);
 }
 
-void Graphics::drawTile(std::string tileSheetPath, SDL_Rect src, int column, int row) {
+void Graphics::drawTile(std::string tileSheetPath, Rect src, int column, int row) {
   SDL_Texture* texture = getTexture(tileSheetPath, RenderLayer::Foreground);
 
   SDL_Rect dest;
-  src.w = src.h = dest.h = dest.w = TILE_SIZE;
+  src.size.w = src.size.h = dest.h = dest.w = TILE_SIZE;
   dest.x = column * TILE_SIZE;
   dest.y = row * TILE_SIZE;
 
@@ -170,14 +170,14 @@ void Graphics::drawTile(std::string tileSheetPath, SDL_Rect src, int column, int
   draw(RenderLayer::Foreground, texture, src, dest, config);
 }
 
-void Graphics::drawTexture(RenderLayer layer, std::string path, SDL_Rect& src, SDL_Rect& dest, DrawConfig& config) {
+void Graphics::drawTexture(RenderLayer layer, std::string path, Rect src, Rect dest, DrawConfig& config) {
   SDL_Texture* texture = getTexture(path, layer);
   draw(layer, texture, src, dest, config);
 }
 
-void Graphics::draw(RenderLayer layer, SDL_Texture* texture, SDL_Rect& src, SDL_Rect dest, DrawConfig& config) {
-  dest.x -= config.paralaxX * getViewPortXOffset();
-  dest.y -= config.paralaxY * getViewPortYOffset();
+void Graphics::draw(RenderLayer layer, SDL_Texture* texture, SDL_Rect src, SDL_Rect dest, DrawConfig& config) {
+  dest.x -= config.paralaxX * getViewPortOffset().x;
+  dest.y -= config.paralaxY * getViewPortOffset().y;
 
   if (config.repeatX || config.repeatY)
   {
@@ -235,6 +235,7 @@ SDL_Renderer* Graphics::getRenderer(RenderLayer layer) {
 }
 
 void Graphics::overlayColor(Uint8* color) {
+  (void) color;
   SDL_SetRenderDrawColor(mRenderer, color[0], color[1], color[2], color[3]);
   SDL_Rect rect;
   rect.y = rect.x = 0;
@@ -244,25 +245,27 @@ void Graphics::overlayColor(Uint8* color) {
   SDL_SetRenderDrawColor(mRenderer, kBackgroundColor[0], kBackgroundColor[1], kBackgroundColor[2], kBackgroundColor[3]);
 }
 
-void Graphics::drawLine(int x1, int y1, int x2, int y2, bool blue) {
+void Graphics::drawLine(Position p1, Position p2, bool blue) {
+  p1 -= getViewPortOffset();
+  p1 *= mWindowScale;
+
+  p2 -= getViewPortOffset();
+  p2 *= mWindowScale;
+
   if (blue) {
     SDL_SetRenderDrawColor(mRenderer, kBlueLineColor[0], kBlueLineColor[1], kBlueLineColor[2], kBlueLineColor[3]);
   } else {
     SDL_SetRenderDrawColor(mRenderer, kLineColor[0], kLineColor[1], kLineColor[2], kLineColor[3]);
   }
-  SDL_RenderDrawLine(mRenderer, x1 * mWindowScale, y1 * mWindowScale, x2 * mWindowScale, y2 * mWindowScale);
+  SDL_RenderDrawLine(mRenderer, p1.x, p1.y, p2.x, p2.y);
   SDL_SetRenderDrawColor(mRenderer, kBackgroundColor[0], kBackgroundColor[1], kBackgroundColor[2], kBackgroundColor[3]);
 }
 
-void Graphics::setViewPort(int x, int y) {
-  mViewPortX = x;
-  mViewPortY = y;
+void Graphics::setViewPort(Position pos) {
+  mViewPort = pos;
 }
 
-int Graphics::getViewPortXOffset() {
-  return mViewPortX - SCREEN_WIDTH / 2;
+Position Graphics::getViewPortOffset() {
+  return Position(mViewPort.x - SCREEN_WIDTH / 2, mViewPort.y - SCREEN_HEIGHT / 2);
 }
 
-int Graphics::getViewPortYOffset() {
-  return mViewPortY - SCREEN_HEIGHT / 2;
-}

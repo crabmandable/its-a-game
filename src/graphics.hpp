@@ -5,6 +5,7 @@
 #include <SDL2/SDL_image.h>
 #include <map>
 #include <iostream>
+#include "geometry.hpp"
 class Graphics {
   public:
     enum class RenderLayer: char {
@@ -36,22 +37,21 @@ class Graphics {
     ~Graphics();
 
     void init();
-    void drawTexture(RenderLayer layer, std::string path, SDL_Rect& src, SDL_Rect& dest, DrawConfig& config);
-    void drawTile(std::string tileSheetPath, SDL_Rect src, int columns, int row);
-    void drawLine(int x1, int y1, int x2, int y2, bool blue = false);
+    void drawTexture(RenderLayer layer, std::string path, Rect src, Rect dest, DrawConfig& config);
+    void drawTile(std::string tileSheetPath, Rect src, int columns, int row);
+    void drawLine(Position p1, Position p2, bool blue = false);
     void overlayColor(Uint8* color);
     void beginDraw();
     void present();
     void blitLayersToScreen();
-    void setViewPort(int x, int y);
+    void setViewPort(Position pos);
 
   private:
-    void draw(RenderLayer layer, SDL_Texture* texture, SDL_Rect& src, SDL_Rect dest, DrawConfig& config);
+    void draw(RenderLayer layer, SDL_Texture* texture, SDL_Rect src, SDL_Rect dest, DrawConfig& config);
     SDL_Renderer* getRenderer(RenderLayer layer);
     SDL_Texture* getTexture(std::string path, RenderLayer layer);
     void updateWindowSize();
-    int getViewPortXOffset();
-    int getViewPortYOffset();
+    Position getViewPortOffset();
 
     SDL_Window* mWindow{nullptr};
     SDL_Renderer* mRenderer{nullptr};
@@ -63,7 +63,6 @@ class Graphics {
     int mWindowHeight, mWindowWidth;
     float mWindowScale;
 
-    int mViewPortX = SCREEN_WIDTH / 2;
-    int mViewPortY = SCREEN_HEIGHT / 2;
+    Position mViewPort{SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2};
 };
 #endif //GRAPHICS_H

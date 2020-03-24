@@ -23,11 +23,10 @@ void Game::loadRoom(std::string name) {
   mRoom = new Room(name);
 
   // place player & camera in room
-  int x, y;
-  mRoom->getStart(x, y);
-  mPlayer.setPosition(x, y);
-  mRoom->adjustCamera(x, y);
-  mCamera.setPosition(x, y);
+  Position start = mRoom->getStart();
+  mPlayer.setPosition(start);
+  mRoom->adjustCameraTarget(start);
+  mCamera.setPosition(start);
 }
 
 void Game::gameLoop() {
@@ -54,7 +53,7 @@ void Game::gameLoop() {
       SDL_Delay(delay.count());
     }
 
-#if DBEUG
+#if DEBUG
     if (0 == frameCounter % 100) {
       auto frameDur = duration_cast<milliseconds>(high_resolution_clock::now() - startTime);
       printf("frame=%d, fps=%f, delay=%ld\n", frameCounter, 1000.0 / frameDur.count(), delay.count());
@@ -92,7 +91,7 @@ void Game::draw(int elapsed_ms) {
       CollisionEdge* playerEdge = mPlayer.getCollisionEdge(i);
       playerEdge->draw(mGraphics);
       std::vector<CollisionEdge*> tileEdges;
-      mRoom->getCollisionEdgesNear(playerEdge->originX, playerEdge->originY, playerEdge->orientation, tileEdges);
+      mRoom->getCollisionEdgesNear(playerEdge->origin, playerEdge->orientation, tileEdges);
       for (auto edge: tileEdges) {
         edge->draw(mGraphics);
       }
@@ -131,7 +130,7 @@ void Game::updatePlayerPosition(int elapsed_ms) {
   mCollidedEdges.clear();
 #endif
 
-  //hanlde player collisions
+  //handle player collisions
   bool colliding = false;
   bool grounded = false;
   do {
@@ -140,13 +139,12 @@ void Game::updatePlayerPosition(int elapsed_ms) {
       CollisionEdge* playerEdge = mPlayer.getCollisionEdge(i);
 
       std::vector<CollisionEdge*> tileEdges;
-      mRoom->getCollisionEdgesNear(playerEdge->originX, playerEdge->originY, playerEdge->orientation, tileEdges);
+      mRoom->getCollisionEdgesNear(playerEdge->origin, playerEdge->orientation, tileEdges);
 
       for (auto edge: tileEdges) {
-        int deltaX = 0, deltaY = 0;
-        detectCollision(*playerEdge, *edge, elapsed_ms, deltaX, deltaY);
-        if (deltaX != 0 || deltaY != 0) {
-          mPlayer.incrementPosition(-deltaX, -deltaY);
+        Vector2D delta = detectCollision(*playerEdge, *edge, elapsed_ms);
+        if (!delta.isZero()) {
+          mPlayer.incrementPosition(-delta);
 
 #ifdef DEBUG
           mCollidedEdges.push_back(new CollisionEdge(*edge));

@@ -18,7 +18,7 @@ void AnimatedSprite::pause() {
   mIsPlaying = false;
 }
 
-void AnimatedSprite::drawNextFrame(int x, int y, Graphics& graphics, int elapsed_ms)
+void AnimatedSprite::drawNextFrame(Position pos, Graphics& graphics, int elapsed_ms)
 {
   if (mIsPlaying) {
     mElapsed += elapsed_ms;
@@ -26,14 +26,9 @@ void AnimatedSprite::drawNextFrame(int x, int y, Graphics& graphics, int elapsed
 
   Animation* anim = mAnimations[mCurrentAnimation];
 
-  SDL_Rect src;
-  src.w = anim->width;
-  src.h = anim->height;
-  src.y = anim->y;
+  Rect src = anim->rect;
 
-  if (anim->frameLength < 2) {
-    src.x = anim->x;
-  } else {
+  if (anim->frameLength >= 2) {
     int animLength = anim->frameLength * anim->nFrames;
     int frame;
     if (anim->loop) {
@@ -41,14 +36,11 @@ void AnimatedSprite::drawNextFrame(int x, int y, Graphics& graphics, int elapsed
     } else {
       frame = std::min(anim->frameLength, (int)(((float)(mElapsed / animLength)) / anim->frameLength));
     }
-    src.x = frame * (anim->width + anim->padding) + anim->x;
+    src.origin.x = frame * (src.size.w + anim->padding) + src.origin.x;
   }
 
-  SDL_Rect dest;
-  dest.w = src.w;
-  dest.h = src.h;
-  dest.x = x;
-  dest.y = y;
+  Rect dest = src;
+  dest.origin = pos;
 
   Graphics::DrawConfig config;
   config.flip = (SDL_RendererFlip)(anim->flip ^ mFlip);

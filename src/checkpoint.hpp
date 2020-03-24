@@ -1,18 +1,15 @@
 #ifndef CHECKPOINT_H
 #define CHECKPOINT_H
 #include "graphics.hpp"
+#include "geometry.hpp"
 class Checkpoint {
   public:
-    Checkpoint(int col, int row, int width, int height, int spawnOffsetCol, int spawnOffsetRow);
-    void getSpawn(int& x, int& y);
-    bool pointIsInCheckpoint(int x, int y);
+    Checkpoint(Rect rect, Position spawnOffset);
+    Position getSpawn();
+    bool pointIsInCheckpoint(Position p);
 
   private:
-    int mOriginX;
-    int mOriginY;
-    int mHeight;
-    int mWidth;
-    int mSpawnOffsetX;
-    int mSpawnOffsetY;
+    Rect mRect;
+    Position mSpawnOffset;
 };
 #endif

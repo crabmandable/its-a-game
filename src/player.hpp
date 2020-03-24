@@ -7,6 +7,7 @@
 #include "animated_sprite.hpp"
 #include "collision.hpp"
 #include "checkpoint.hpp"
+#include "geometry.hpp"
 
 class Player : public GameObject {
   public:
@@ -18,13 +19,9 @@ class Player : public GameObject {
     const float kJumpLength_ms = 250;
     const float kGravity = 0.0023;
 
-    const int kCollisionXLength = 35;
-    const int kCollisionYLength = 8;
-    const int kCollisionXOverhang = 0;
-    const int kCollisionYOverhang = 1;
-
-    const int kCollisionXOffset = 9;
-    const int kCollisionYOffset = 0;
+    const Position kCollisionLength{35, 8};
+    const Position kCollisionOverhang{0, 1};
+    const Position kCollisionOffset{9, 0};
 
     enum class State {
       Idle,
@@ -35,6 +32,7 @@ class Player : public GameObject {
 
 
     Player();
+
     void update(Input& input, int elapsed_ms);
     void updateXVelocity(int elapsed_ms);
     void updateYVelocity(int elapsed_ms);
@@ -43,10 +41,10 @@ class Player : public GameObject {
 
     Collision::CollisionEdge* getCollisionEdge(int idx);
 
-    void incrementPosition(int x, int y);
-    void setPosition(int x, int y);
-    void getPosition(int &x, int &y);
-    void getVelocity(float &x, float &y);
+    void incrementPosition(Vector2D delta);
+    void setPosition(Position p);
+    Position getPosition();
+    Velocity getVelocity();
     bool getFacing();
     State getState();
     void isGrounded(bool grounded);
@@ -64,8 +62,7 @@ class Player : public GameObject {
     State mState = State::Idle;
     bool mIsFacingRight = true;
     bool mGrounded = false;
-    float mXVelocity = 0;
-    float mYVelocity = 0;
+    Velocity mVelocity;
 
     int mDirection = 0;
     int mJumpElapsed = 0;

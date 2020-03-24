@@ -20,7 +20,7 @@ build: $(PROG)
 -include $(DEPS)
 
 clean:
-	rm -rf $(PROG) $(OBJS)
+	rm -rf $(PROG) obj/*
 
 $(PROG): $(OBJS)
 	@$(MKDIR) $(dir $@)

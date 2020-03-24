@@ -8,8 +8,8 @@ namespace Collision {
   static const int kCollisionCheckTileRadius = 4;
 
   enum class Orientation {
-    X,
-    Y
+    X, // when x constant and y changes (like a y axis)
+    Y // when y is constant and x changes (like an x axis)
   };
 
   enum class CollisionDirection : unsigned {
@@ -22,24 +22,18 @@ namespace Collision {
   struct CollisionEdge {
     Orientation orientation = Orientation::X;
     CollisionDirection direction = CollisionDirection::Both;
-    float velocityX = 0;
-    float velocityY = 0;
-    int originX = 0;
-    int originY = 0;
+    Velocity velocity;
+    Position origin;
     int length = 0;
 
-    // returns points that make up the line perpendicular to the orientation
-    void getPerpendicularPoints(float &p1, float &p2, int elapsed_ms);
     // returns the origin coordinate of the orientation
-    float getParallelPoint();
     bool directionIsPositive();
     bool directionIsNegative();
-    float perpendicularVelocity();
     float parallelVelocity();
     void draw(Graphics& graphics, bool blue = false);
   };
 
-  void detectCollision(CollisionEdge &e1, CollisionEdge &e2, int elapsed_ms, int &deltaX, int &deltaY);
+  Vector2D detectCollision(CollisionEdge &e1, CollisionEdge &e2, int elapsed_ms);
 
   //[right, top, left, bottom]
   static const unsigned int collisionTileMap[55][4] = {

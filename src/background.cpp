@@ -1,17 +1,14 @@
 #include "background.hpp"
 
-Background::Background(std::string sheetName, int nLayers, int width, int height) {
+Background::Background(std::string sheetName, int nLayers, Size size) {
   mSheetName = sheetName;
   mNumberOfLayers = nLayers;
-  mHeight = height;
-  mWidth = width;
+  mSize = size;
 }
 
 void Background::draw(Graphics& graphics) {
-  SDL_Rect src, dest;
-  src.x = src.y = dest.x = dest.y = 0;
-  src.w = dest.w = mWidth;
-  src.h = dest.h = mHeight;
+  Rect src, dest;
+  src.size = dest.size = mSize;
 
   Graphics::DrawConfig config;
   config.repeatX = true;
@@ -19,6 +16,6 @@ void Background::draw(Graphics& graphics) {
   for (int i = 0; i < mNumberOfLayers; i++) {
     config.paralaxX = i * (1.0 / mNumberOfLayers);
     graphics.drawTexture(Graphics::RenderLayer::Background, mSheetName, src, dest, config);
-    src.y += mHeight;
+    src.origin.y += mSize.h;
   }
 }

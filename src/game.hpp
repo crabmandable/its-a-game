@@ -12,9 +12,10 @@
 #include "player.hpp"
 #include "room.hpp"
 #include "camera.hpp"
+#include "geometry.hpp"
 
 #ifndef DEBUG
-#define DEBUG true
+#define DEBUG false
 #endif
 
 class Game {
@@ -36,7 +37,7 @@ class Game {
     bool mRunning{true};
 
 #if DEBUG
-    bool mShouldDrawCollision = DEBUG;
+    bool mShouldDrawCollision = true;
 #endif
 
     Graphics mGraphics;

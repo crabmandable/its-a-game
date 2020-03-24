@@ -2,20 +2,20 @@
 Player::Player() {
   mSprite.setSpriteSheet("KidSheet.png");
 
-  auto idle = new Animation(0, 0, 24, 39, 4, 208);
+  auto idle = new Animation({{0, 0}, {24, 39}}, 4, 208);
   mSprite.defineAnimation("idle", idle);
 
-  auto run =  new Animation(0, 81, 28, 42, 7, 80);
+  auto run =  new Animation({{0, 81}, {28, 42}}, 7, 80);
   mSprite.defineAnimation("run", run);
 
-  Animation* jump = new Animation(0, 39, 28, 42, 2, 100);
+  Animation* jump = new Animation({{0, 39}, {28, 42}}, 2, 100);
   jump->loop = false;
   mSprite.defineAnimation("jump", jump);
 
-  Animation* fall = new Animation(112, 39, 28, 40, 2, 180);
+  Animation* fall = new Animation({{112, 39}, {28, 40}}, 2, 180);
   mSprite.defineAnimation("fall", fall);
 
-  Animation* fallMove = new Animation(56, 39, 28, 40, 2, 180);
+  Animation* fallMove = new Animation({{56, 39}, {28, 40}}, 2, 180);
   mSprite.defineAnimation("fall_move", fallMove);
 }
 
@@ -65,34 +65,31 @@ void Player::updateState(Input& input, int elapsed_ms) {
 void Player::updateXVelocity(int elapsed_ms) {
   //accelerate
   if (mDirection != 0) {
-    //if we didnt max out
-    if ((mDirection > 0 && mXVelocity < kMaxSpeed) || (mDirection < 0 && mXVelocity > -kMaxSpeed))
+    mVelocity.x = mVelocity.x + (elapsed_ms * kAcceleration * mDirection);
+
+    // if we maxed out limit to max speed
+    if ((mVelocity.x < 0 && mVelocity.x < -kMaxSpeed) ||
+        (mVelocity.x > 0 && mVelocity.x > kMaxSpeed))
     {
-      mXVelocity += elapsed_ms * kAcceleration * mDirection;
-    }
-    //if we did max out
-    else if ((mXVelocity < 0 && mXVelocity < -kMaxSpeed) ||
-        (mXVelocity > 0 && mXVelocity > kMaxSpeed))
-    {
-      mXVelocity = mDirection * kMaxSpeed;
+      mVelocity.x = mDirection * kMaxSpeed;
     }
   }
   //decelerate
-  else if (abs(mXVelocity) > 0) {
+  else if (abs(mVelocity.x) > 0) {
     int dir = mIsFacingRight ? 1 : -1;
 
     float decel = mState == State::Jumping ? kJumpDeceleration : kDeceleration;
-    mXVelocity = mXVelocity + (elapsed_ms * (-decel) * dir);
-    if ((mIsFacingRight && mXVelocity < 0) || (!mIsFacingRight && mXVelocity > 0))
-      mXVelocity = 0;
+    mVelocity.x = mVelocity.x + (elapsed_ms * (-decel) * dir);
+    if ((mIsFacingRight && mVelocity.x < 0) || (!mIsFacingRight && mVelocity.x > 0))
+      mVelocity.x = 0;
   }
 }
 
 void Player::updateYVelocity(int elapsed_ms) {
   if (mState == State::Jumping) {
-    mYVelocity = -kJumpForce;
+    mVelocity.y = -kJumpForce;
   } else {
-    mYVelocity += kGravity * elapsed_ms;
+    mVelocity.y += kGravity * elapsed_ms;
   }
 }
 
@@ -111,7 +108,7 @@ void Player::updateAnimation() {
       mSprite.play("run");
       break;
     case State::Falling:
-      if (abs(mXVelocity) < kMaxSpeed) {
+      if (abs(mVelocity.x) < kMaxSpeed) {
         mSprite.play("fall");
       } else {
         mSprite.play("fall_move");
@@ -127,8 +124,10 @@ void Player::updateAnimation() {
 
 void Player::updatePosition(int elapsed_ms)
 {
-  mXPos += (int)(mXVelocity * elapsed_ms);
-  mYPos += (int)(mYVelocity * elapsed_ms);
+  // round x to make sure speed is equal in both directions
+  // floor y to prevent jiggling up and down
+  FloatPosition fp = ((FloatPosition)mPosition) + (mVelocity * elapsed_ms);
+  mPosition = Position(std::round(fp.x), floor(fp.y));
 }
 
 Sprite* Player::getSprite() {
@@ -139,14 +138,12 @@ Collision::CollisionEdge* Player::getCollisionEdge(int idx) {
   return mCollisionEdges + idx;
 }
 
-void Player::getPosition(int &x, int &y) {
-  x = mXPos;
-  y = mYPos;
+Position Player::getPosition() {
+  return mPosition;
 }
 
-void Player::getVelocity(float &x, float &y) {
-  x = mXVelocity;
-  y = mYVelocity;
+Velocity Player::getVelocity() {
+  return mVelocity;
 }
 
 bool Player::getFacing() {
@@ -157,64 +154,60 @@ Player::State Player::getState() {
   return mState;
 }
 
-void Player::incrementPosition(int x, int y) {
-  mXPos += x;
-  mYPos += y;
+void Player::incrementPosition(Vector2D delta) {
+  mPosition += delta;
   updateCollisionEdges();
 }
 
-void Player::setPosition(int x, int y) {
-  mXPos = x;
-  mYPos = y;
+void Player::setPosition(Position p) {
+  mPosition = p;
   updateCollisionEdges();
 }
 
 void Player::updateCollisionEdges() {
   using namespace Collision;
   //left
-  mCollisionEdges[0].originX = kCollisionXOffset + mXPos;
-  mCollisionEdges[0].originY = kCollisionYOffset + mYPos - kCollisionXOverhang;
+  mCollisionEdges[0].origin = kCollisionOffset + mPosition;
+  mCollisionEdges[0].origin.y -= kCollisionOverhang.x;
   mCollisionEdges[0].orientation = Orientation::X;
   mCollisionEdges[0].direction = CollisionDirection::Negative;
-  mCollisionEdges[0].length = kCollisionXLength + kCollisionXOverhang;
-  mCollisionEdges[0].velocityX = mXVelocity;
-  mCollisionEdges[0].velocityY = mYVelocity;
+  mCollisionEdges[0].length = kCollisionLength.x + kCollisionOverhang.x;
+  mCollisionEdges[0].velocity = mVelocity;
 
   //top
-  mCollisionEdges[1].originX = kCollisionXOffset + mXPos - kCollisionYOverhang;
-  mCollisionEdges[1].originY = kCollisionYOffset + mYPos;
+  mCollisionEdges[1].origin = kCollisionOffset + mPosition;
+  mCollisionEdges[1].origin.x -= kCollisionOverhang.y;
   mCollisionEdges[1].orientation = Orientation::Y;
   mCollisionEdges[1].direction = CollisionDirection::Negative;
-  mCollisionEdges[1].length = kCollisionYLength + (kCollisionYOverhang * 2);
-  mCollisionEdges[1].velocityX = mXVelocity;
-  mCollisionEdges[1].velocityY = mYVelocity;
+  mCollisionEdges[1].length = kCollisionLength.y + (kCollisionOverhang.y * 2);
+  mCollisionEdges[1].velocity = mVelocity;
 
   //right
-  mCollisionEdges[2].originX = kCollisionXOffset + mXPos + kCollisionYLength;
-  mCollisionEdges[2].originY = kCollisionYOffset + mYPos - kCollisionXOverhang;
+  mCollisionEdges[2].origin = kCollisionOffset + mPosition;
+  mCollisionEdges[2].origin.x += kCollisionLength.y;
+  mCollisionEdges[2].origin.y -= kCollisionOverhang.y;
   mCollisionEdges[2].orientation = Orientation::X;
   mCollisionEdges[2].direction = CollisionDirection::Positive;
-  mCollisionEdges[2].length = kCollisionXLength + kCollisionXOverhang;
-  mCollisionEdges[2].velocityX = mXVelocity;
-  mCollisionEdges[2].velocityY = mYVelocity;
+  mCollisionEdges[2].length = kCollisionLength.x + kCollisionOverhang.x;
+  mCollisionEdges[2].velocity = mVelocity;
 
   //bottom
-  mCollisionEdges[3].originX = kCollisionXOffset + mXPos - kCollisionYOverhang;
-  mCollisionEdges[3].originY = kCollisionYOffset + mYPos + kCollisionXLength;
+  mCollisionEdges[3].origin = kCollisionOffset + mPosition;
+  mCollisionEdges[3].origin.x -= kCollisionOverhang.y;
+  mCollisionEdges[3].origin.y += kCollisionLength.x;
   mCollisionEdges[3].orientation = Orientation::Y;
   mCollisionEdges[3].direction = CollisionDirection::Positive;
-  mCollisionEdges[3].length = kCollisionYLength + (kCollisionYOverhang * 2);
-  mCollisionEdges[3].velocityX = mXVelocity;
-  mCollisionEdges[3].velocityY = mYVelocity;
+  mCollisionEdges[3].length = kCollisionLength.y + (kCollisionOverhang.y * 2);
+  mCollisionEdges[3].velocity = mVelocity;
 }
 
 void Player::isGrounded(bool grounded) {
   mGrounded = grounded;
   if (grounded) {
     mState = mDirection != 0 ? State::Running : State::Idle;
-    mYVelocity = 0;
+    mVelocity.y = 0;
     for (int i = 0; i < 4; i++) {
-      mCollisionEdges[i].velocityY = 0;
+      mCollisionEdges[i].velocity.y = 0;
     }
   }
 }
@@ -226,7 +219,5 @@ void Player::setCheckpoint(Checkpoint* checkpoint) {
 void Player::goToCheckpoint() {
   if (!mCheckpoint) return;
 
-  int x, y;
-  mCheckpoint->getSpawn(x, y);
-  setPosition(x, y);
+  setPosition(mCheckpoint->getSpawn());
 }

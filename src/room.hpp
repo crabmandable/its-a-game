@@ -12,6 +12,7 @@
 #include "background.hpp"
 #include "checkpoint.hpp"
 #include "player.hpp"
+#include "geometry.hpp"
 class Room {
   public:
 
@@ -27,9 +28,9 @@ class Room {
     void drawTiles(Graphics& graphics);
     void drawBackground(Graphics& graphics);
     void drawOverlay(Graphics& graphics);
-    void getStart(int& x, int& y);
-    void getCollisionEdgesNear(int x, int y, Collision::Orientation orientation, std::vector<Collision::CollisionEdge*> &edges);
-    void adjustCamera(int &x, int &y);
+    Position getStart();
+    void getCollisionEdgesNear(Position pos, Collision::Orientation orientation, std::vector<Collision::CollisionEdge*> &edges);
+    void adjustCameraTarget(Position& target);
     void affectPlayer(Player& player);
 
   private:
@@ -57,16 +58,16 @@ class Room {
 
     int mColumns;
     int mRows;
-    int mWidth;
-    int mHeight;
+
+    Size mSize;
+
     std::vector<std::vector<std::vector<Sprite*>>> mTileLayers;
     std::vector<std::vector<unsigned int>> mCollisionMap;
     std::vector<std::vector<Directive>> mDirectivesMap;
 
     std::vector<Checkpoint*> mCheckpoints;
 
-    int mStartX = 0;
-    int mStartY = 0;
+    Position mStart;
 
     Background mBackground;
 

@@ -1,8 +1,7 @@
 #include "asset.hpp"
 
-Asset::Asset(std::string fileName, int width, int height, SDL_Renderer* renderer) {
-  mWidth = width;
-  mHeight = height;
+Asset::Asset(std::string fileName, Size size, SDL_Renderer* renderer) {
+  mSize = size;
   std::string subdir = "";
   std::string baseName = fileName;
   if (fileName.find("/") != std::string::npos) {
@@ -28,12 +27,8 @@ SDL_Texture* Asset::texture() {
   return mTexture;
 }
 
-int Asset::height() {
-  return mHeight;
-}
-
-int Asset::width() {
-  return mWidth;
+Size Asset::size() {
+  return mSize;
 }
 
 std::string Asset::getAssetPath(const std::string &subDir) {
