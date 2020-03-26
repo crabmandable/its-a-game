@@ -65,7 +65,7 @@ void Player::updateState(Input& input, int elapsed_ms) {
 void Player::updateXVelocity(int elapsed_ms) {
   //accelerate
   if (mDirection != 0) {
-    mVelocity.x = mVelocity.x + (elapsed_ms * kAcceleration * mDirection);
+    mVelocity.x = mVelocity.x + (elapsed_ms * kAcceleration * (float)mDirection);
 
     // if we maxed out limit to max speed
     if ((mVelocity.x < 0 && mVelocity.x < -kMaxSpeed) ||

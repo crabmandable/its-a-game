@@ -11,10 +11,10 @@
 
 class Player : public GameObject {
   public:
-    const float kAcceleration = 0.003;
+    const float kAcceleration = 0.002;
     const float kDeceleration = 0.00115;
     const float kJumpDeceleration = 0.0009;
-    const float kMaxSpeed = 0.13;
+    const float kMaxSpeed = 0.105;
     const float kJumpForce = 0.25;
     const float kJumpLength_ms = 250;
     const float kGravity = 0.0023;
