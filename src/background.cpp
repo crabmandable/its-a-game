@@ -7,15 +7,15 @@ Background::Background(std::string sheetName, int nLayers, Size size) {
 }
 
 void Background::draw(Graphics& graphics) {
-  Rect src, dest;
-  src.size = dest.size = mSize;
+  Rect src;
+  src.size = mSize;
 
   Graphics::DrawConfig config;
   config.repeatX = true;
   config.repeatY = true;
   for (int i = 0; i < mNumberOfLayers; i++) {
     config.paralaxX = i * (1.0 / mNumberOfLayers);
-    graphics.drawTexture(Graphics::RenderLayer::Background, mSheetName, src, dest, config);
+    graphics.drawBackground(mSheetName, src, config);
     src.origin.y += mSize.h;
   }
 }

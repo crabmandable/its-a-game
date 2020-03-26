@@ -9,8 +9,6 @@ Graphics::~Graphics() {
   }
   if (mForegroundRenderer) SDL_DestroyRenderer(mForegroundRenderer);
   if (mForegroundSurface) SDL_FreeSurface(mForegroundSurface);
-  if (mBackgroundRenderer) SDL_DestroyRenderer(mBackgroundRenderer);
-  if (mBackgroundSurface) SDL_FreeSurface(mBackgroundSurface);
   if (mRenderer) SDL_DestroyRenderer(mRenderer); 
   if (mWindow) SDL_DestroyWindow(mWindow);
 }
@@ -61,27 +59,12 @@ void Graphics::init() {
   SDL_SetRenderDrawBlendMode(mRenderer, SDL_BLENDMODE_BLEND);
   SDL_SetWindowTitle(mWindow, "Zach's amazing game");
 
-
-  if (!(mBackgroundSurface = SDL_CreateRGBSurface(0, SCREEN_WIDTH + OVERBUFFER * 2, SCREEN_HEIGHT + OVERBUFFER * 2, 32, 0, 0, 0, 0))) {
-    std::cout << "Unable to create tile surface:" << SDL_GetError() << std::endl;
-    return;
-  }
-
-  Uint32 colorkey = SDL_MapRGB(mBackgroundSurface->format, 0, 0, 0);
-
-  SDL_SetColorKey(mBackgroundSurface, SDL_TRUE, colorkey);
-
-  if (!(mBackgroundRenderer = SDL_CreateSoftwareRenderer(mBackgroundSurface))) {
-    std::cout << "Unable to create tile renderer:" << SDL_GetError() << std::endl;
-    return;
-  }
-
   if (!(mForegroundSurface = SDL_CreateRGBSurface(0,  SCREEN_WIDTH + OVERBUFFER * 2, SCREEN_HEIGHT + OVERBUFFER * 2, 32, 0, 0, 0, 0))) {
     std::cout << "Unable to create tile surface:" << SDL_GetError() << std::endl;
     return;
   }
 
-  colorkey = SDL_MapRGB(mForegroundSurface->format, 0, 0, 0);
+  Uint32 colorkey = SDL_MapRGB(mForegroundSurface->format, 0, 0, 0);
   SDL_SetColorKey(mForegroundSurface, SDL_TRUE, colorkey);
 
   if (!(mForegroundRenderer = SDL_CreateSoftwareRenderer(mForegroundSurface))) {
@@ -130,13 +113,11 @@ void Graphics::beginDraw() {
   updateWindowSize();
   SDL_SetRenderDrawColor(mRenderer, kBackgroundColor[0], kBackgroundColor[1], kBackgroundColor[2], kBackgroundColor[3]);
   SDL_SetRenderDrawColor(mForegroundRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-  SDL_SetRenderDrawColor(mBackgroundRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
   SDL_RenderClear(mRenderer);
-  SDL_RenderClear(mBackgroundRenderer);
   SDL_RenderClear(mForegroundRenderer);
 }
 
-void Graphics::blitLayersToScreen() {
+void Graphics::blitForegroundToScreen() {
   SDL_Rect src, dest;
   src.y = src.x = 0;
 
@@ -153,10 +134,6 @@ void Graphics::blitLayersToScreen() {
 
   float yOffset = getViewPortOffset().y - floor(getViewPortOffset().y); 
   dest.y = (1 - yOffset > yOffset ? -yOffset : 1 - yOffset) * mWindowScale - OVERBUFFER;
-
-  SDL_Texture* bgTexture = SDL_CreateTextureFromSurface(mRenderer, mBackgroundSurface);
-  SDL_RenderCopy(mRenderer, bgTexture, &src, &dest);
-  SDL_DestroyTexture(bgTexture);
 
   SDL_Texture* fgTexture = SDL_CreateTextureFromSurface(mRenderer, mForegroundSurface);
   SDL_RenderCopy(mRenderer, fgTexture, &src, &dest);
@@ -184,33 +161,43 @@ void Graphics::drawTexture(RenderLayer layer, std::string path, Rect src, Rect d
   draw(layer, texture, src, dest, config);
 }
 
-void Graphics::draw(RenderLayer layer, SDL_Texture* texture, SDL_Rect src, SDL_Rect dest, DrawConfig& config) {
-  dest.x -= config.paralaxX * std::round(getViewPortOffset().x);
-  dest.y -= config.paralaxY * std::round(getViewPortOffset().y);
+void Graphics::drawBackground(std::string path, SDL_Rect src, DrawConfig& config) {
+  SDL_Renderer* renderer = getRenderer(RenderLayer::Background);
+  SDL_Texture* texture = getTexture(path, RenderLayer::Background);
+  SDL_Rect dest = src;
+  dest.w *= mWindowScale;
+  dest.h *= mWindowScale;
+  dest.x *= mWindowScale;
+  dest.y *= mWindowScale;
+  int screenW = SCREEN_WIDTH * mWindowScale;
+  int screenH = SCREEN_HEIGHT * mWindowScale;
+
+  dest.x -= std::round(config.paralaxX * getViewPortOffset().x * mWindowScale);
+  dest.y -= std::round(config.paralaxY * getViewPortOffset().y * mWindowScale);
 
   if (config.repeatX || config.repeatY)
   {
     int startY = (dest.y % dest.h) - dest.h;
-    int nY = ceil((abs(startY) + SCREEN_HEIGHT) / (float) dest.h);
+    int nY = ceil((abs(startY) + screenH) / (float) dest.h);
     int startX = (dest.x % dest.w) - dest.w;
-    int nX = ceil((abs(startX) + SCREEN_WIDTH) / (float) dest.w);
+    int nX = ceil((abs(startX) + screenW) / (float) dest.w);
 
     if (!config.repeatX && config.repeatY) //y repeat
     {
-      if (dest.x < SCREEN_WIDTH && dest.x + dest.w > 0) {
+      if (dest.x < screenW && dest.x + dest.w > 0) {
         dest.x = startX;
         for (int i = 0; i < nX; i++) {
-          SDL_RenderCopyEx(getRenderer(layer), texture, &src, &dest, 0, NULL, config.flip);
+          SDL_RenderCopyEx(renderer, texture, &src, &dest, 0, NULL, config.flip);
           dest.x += dest.w;
         }
       }
     }
     else if (!config.repeatY && config.repeatX) //x repeat
     {
-      if (dest.y < SCREEN_HEIGHT && dest.y + dest.h > 0) {
+      if (dest.y < screenH && dest.y + dest.h > 0) {
         dest.y = startY;
         for (int i = 0; i < nX; i++) {
-          SDL_RenderCopyEx(getRenderer(layer), texture, &src, &dest, 0, NULL, config.flip);
+          SDL_RenderCopyEx(renderer, texture, &src, &dest, 0, NULL, config.flip);
           dest.y += dest.h;
         }
       }
@@ -219,14 +206,25 @@ void Graphics::draw(RenderLayer layer, SDL_Texture* texture, SDL_Rect src, SDL_R
         for (int i = 0; i < nX; i++) {
           dest.y = startY;
           for (int j = 0; j < nY; j++) {
-            SDL_RenderCopyEx(getRenderer(layer), texture, &src, &dest, 0, NULL, config.flip);
+            SDL_RenderCopyEx(renderer, texture, &src, &dest, 0, NULL, config.flip);
             dest.y += dest.h;
           }
           dest.x += dest.w;
         }
     }
   } //only bother drawing textures that are in the screen
-  else if ((dest.x < SCREEN_WIDTH && dest.x + dest.w > 0) && 
+  else if ((dest.x < screenW && dest.x + dest.w > 0) && 
+      (dest.y < screenH && dest.y + dest.h > 0))
+  {
+    SDL_RenderCopyEx(renderer, texture, &src, &dest, 0, NULL, config.flip);
+  }
+}
+
+void Graphics::draw(RenderLayer layer, SDL_Texture* texture, SDL_Rect src, SDL_Rect dest, DrawConfig& config) {
+  dest.x -= std::round(getViewPortOffset().x);
+  dest.y -= std::round(getViewPortOffset().y);
+
+  if ((dest.x < SCREEN_WIDTH && dest.x + dest.w > 0) && 
       (dest.y < SCREEN_HEIGHT && dest.y + dest.h > 0))
   {
     SDL_RenderCopyEx(getRenderer(layer), texture, &src, &dest, 0, NULL, config.flip);
@@ -236,7 +234,7 @@ void Graphics::draw(RenderLayer layer, SDL_Texture* texture, SDL_Rect src, SDL_R
 SDL_Renderer* Graphics::getRenderer(RenderLayer layer) {
   switch(layer) {
     case RenderLayer::Background:
-      return mBackgroundRenderer;
+      return mRenderer;
     case RenderLayer::Foreground:
     default:
       return mForegroundRenderer;

@@ -42,7 +42,7 @@ void Game::gameLoop() {
     elapsed = high_resolution_clock::now();
 #if DEBUG
     // need consistent tick for debugging
-    tick_ms = 16;
+    tick_ms = 1000 / TARGET_FPS;
 #endif
     update(tick_ms);
     draw(tick_ms);
@@ -78,10 +78,11 @@ void Game::update(int elapsed_ms) {
 void Game::draw(int elapsed_ms) {
   mGraphics.beginDraw();
 
-  mRoom->drawBackground(mGraphics);
   mRoom->drawTiles(mGraphics);
   mPlayer.draw(mGraphics, elapsed_ms);
-  mGraphics.blitLayersToScreen();
+
+  mRoom->drawBackground(mGraphics);
+  mGraphics.blitForegroundToScreen();
   mRoom->drawOverlay(mGraphics);
 
 #if DEBUG

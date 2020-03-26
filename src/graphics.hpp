@@ -38,13 +38,14 @@ class Graphics {
     ~Graphics();
 
     void init();
+    void drawBackground(std::string path, SDL_Rect src, DrawConfig& config);
     void drawTexture(RenderLayer layer, std::string path, Rect src, Rect dest, DrawConfig& config);
     void drawTile(std::string tileSheetPath, Rect src, int columns, int row);
     void drawLine(Position p1, Position p2, bool blue = false);
     void overlayColor(Uint8* color);
     void beginDraw();
     void present();
-    void blitLayersToScreen();
+    void blitForegroundToScreen();
     void setViewPort(FloatPosition pos);
 
   private:
@@ -58,8 +59,6 @@ class Graphics {
     SDL_Renderer* mRenderer{nullptr};
     SDL_Surface* mForegroundSurface{nullptr};
     SDL_Renderer* mForegroundRenderer{nullptr};
-    SDL_Surface* mBackgroundSurface{nullptr};
-    SDL_Renderer* mBackgroundRenderer{nullptr};
     std::map<std::string, SDL_Texture*> mTextures;
     int mWindowHeight, mWindowWidth;
     float mWindowScale;
