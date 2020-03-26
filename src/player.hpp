@@ -19,9 +19,9 @@ class Player : public GameObject {
     const float kJumpLength_ms = 250;
     const float kGravity = 0.0023;
 
-    const Position kCollisionLength{35, 8};
-    const Position kCollisionOverhang{0, 1};
-    const Position kCollisionOffset{9, 0};
+    const Position kCollisionLength{35, 2};
+    const Position kCollisionOverhang{0, 0};
+    const Position kCollisionOffset{11, 0};
 
     enum class State {
       Idle,
