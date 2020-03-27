@@ -12,6 +12,7 @@ void AnimatedSprite::play(std::string animationName) {
   mCurrentAnimation = animationName;
   mElapsed = 0;
   mIsPlaying = true;
+  mHidden = false;
 }
 
 void AnimatedSprite::pause() {

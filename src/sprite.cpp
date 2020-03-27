@@ -46,3 +46,7 @@ void Sprite::drawNextFrame(Position p, Graphics& graphics, int elapsed_ms) {
   config.flip = mFlip;
   graphics.drawTexture(mRenderLayer, mSheetName, src, dest, config);
 }
+
+void Sprite::setHidden(bool hidden) {
+  mHidden = hidden;
+}

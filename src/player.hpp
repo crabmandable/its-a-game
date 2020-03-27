@@ -19,6 +19,8 @@ class Player : public GameObject {
     const float kJumpLength_ms = 250;
     const float kGravity = 0.0023;
 
+    const int kRespawnTime_ms = 1000;
+
     const Position kCollisionLength{35, 2};
     const Position kCollisionOverhang{0, 0};
     const Position kCollisionOffset{11, 0};
@@ -27,9 +29,13 @@ class Player : public GameObject {
       Idle,
       Running,
       Jumping,
-      Falling
+      Falling,
+      Dead
     };
 
+    enum class DeathType {
+      Falling
+    };
 
     Player();
 
@@ -49,8 +55,9 @@ class Player : public GameObject {
     State getState();
     void isGrounded(bool grounded);
     void goToCheckpoint();
-
     void setCheckpoint(Checkpoint* checkpoint);
+    void killPlayer(DeathType t);
+
   protected:
     Sprite* getSprite();
 
@@ -60,12 +67,14 @@ class Player : public GameObject {
 
     AnimatedSprite mSprite;
     State mState = State::Idle;
+    DeathType mDeath = DeathType::Falling;
     bool mIsFacingRight = true;
     bool mGrounded = false;
     Velocity mVelocity;
 
     int mDirection = 0;
     int mJumpElapsed = 0;
+    int mDeathElapsed = 0;
     Checkpoint* mCheckpoint = nullptr;
 
     Collision::CollisionEdge mCollisionEdges[4];

@@ -272,9 +272,9 @@ void Room::getCollisionEdgesNear(Position pos, Collision::Orientation orientatio
 
 void Room::affectPlayer(Player& player) {
   Position pos = player.getPosition();
-  //outside of map - should go back to checkp
+  //outside of map - should die
   if (pos.x >= mSize.w || pos.x < 0 || pos.y >= mSize.h || pos.y < 0) {
-    player.goToCheckpoint();
+    player.killPlayer(Player::DeathType::Falling);
   } else {
     updateCheckpoint(player);
   }

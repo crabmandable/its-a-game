@@ -27,6 +27,15 @@ void Player::update(Input& input, int elapsed_ms) {
 }
 
 void Player::updateState(Input& input, int elapsed_ms) {
+  if (mState == State::Dead) {
+    mDeathElapsed += elapsed_ms;
+    if (mDeathElapsed >= kRespawnTime_ms) {
+      goToCheckpoint();
+      mState = State::Idle;
+    }
+    return;
+  }
+
   bool right = input.keyIsHeld(SDL_SCANCODE_D);
   bool left = input.keyIsHeld(SDL_SCANCODE_A);
   bool jump = input.keyIsHeld(SDL_SCANCODE_SPACE) || input.keyIsHeld(SDL_SCANCODE_W);
@@ -63,6 +72,7 @@ void Player::updateState(Input& input, int elapsed_ms) {
 }
 
 void Player::updateXVelocity(int elapsed_ms) {
+  if (mState == State::Dead) return;
   //accelerate
   if (mDirection != 0) {
     mVelocity.x = mVelocity.x + (elapsed_ms * kAcceleration * (float)mDirection);
@@ -86,6 +96,7 @@ void Player::updateXVelocity(int elapsed_ms) {
 }
 
 void Player::updateYVelocity(int elapsed_ms) {
+  if (mState == State::Dead) return;
   if (mState == State::Jumping) {
     mVelocity.y = -kJumpForce;
   } else {
@@ -117,6 +128,11 @@ void Player::updateAnimation() {
     case State::Jumping:
       mSprite.play("jump");
       break;
+    case State::Dead:
+      if (mDeath == DeathType::Falling) {
+        mSprite.setHidden(true);
+      }
+      break;
     default:
       break;
   };
@@ -124,6 +140,8 @@ void Player::updateAnimation() {
 
 void Player::updatePosition(int elapsed_ms)
 {
+  if (mState == State::Dead) return;
+
   // round x to make sure speed is equal in both directions
   // floor y to prevent jiggling up and down
   FloatPosition fp = ((FloatPosition)mPosition) + (mVelocity * elapsed_ms);
@@ -220,4 +238,13 @@ void Player::goToCheckpoint() {
   if (!mCheckpoint) return;
 
   setPosition(mCheckpoint->getSpawn());
+}
+
+void Player::killPlayer(DeathType t) {
+  if (mState == State::Dead) return;
+
+  mDeath = t;
+  mState = State::Dead;
+  mDeathElapsed = 0;
+  mVelocity = Velocity(0, 0);
 }

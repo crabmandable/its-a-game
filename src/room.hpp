@@ -15,7 +15,6 @@
 #include "geometry.hpp"
 class Room {
   public:
-
     /*
      * The room constructor loads the map file
      * the visible layers are initialized and other data is loaded for collision & map directives
