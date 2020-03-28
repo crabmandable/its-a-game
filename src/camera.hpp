@@ -19,6 +19,7 @@ class Camera {
     void update(int elapsed_ms);
     void updateViewPort(Graphics& graphics);
     void setPosition(FloatPosition pos);
+    FloatPosition getPosition();
   private:
     Velocity mVelocity;
     FloatPosition mPosition{Graphics::SCREEN_WIDTH / 2, Graphics::SCREEN_HEIGHT / 2};

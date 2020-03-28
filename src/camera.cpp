@@ -36,3 +36,7 @@ void Camera::updateViewPort(Graphics& graphics) {
 void Camera::setPosition(FloatPosition pos) {
   mPosition = pos;
 }
+
+FloatPosition Camera::getPosition() {
+  return mPosition;
+}

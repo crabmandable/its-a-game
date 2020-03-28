@@ -11,7 +11,8 @@ class Graphics {
     enum class RenderLayer: char {
       //charachters used to create texture keys for the mTextures map
       Background = 'b',
-      Foreground = 'f'
+      Foreground = 'f',
+      Transition = 't'
     }; 
 
     struct DrawConfig {
@@ -27,10 +28,11 @@ class Graphics {
     static const int SCREEN_HEIGHT = 360;
     static const int HEIGHT_RATIO = 9;
     static const int WIDTH_RATIO = 16;
+    // OVERBUFFER is used for foreground layer, in order to do sub-pixel camera movements
     static const int OVERBUFFER = 2;
-    const int kLineColor[4] = {255, 0, 0, SDL_ALPHA_OPAQUE};
-    const int kBlueLineColor[4] = {0, 0, 255, SDL_ALPHA_OPAQUE};
-    const int kBackgroundColor[4] = {20, 50, 128, SDL_ALPHA_OPAQUE};
+    const Uint8 kLineColor[4] = {255, 0, 0, SDL_ALPHA_OPAQUE};
+    const Uint8 kBlueLineColor[4] = {0, 0, 255, SDL_ALPHA_OPAQUE};
+    const Uint8 kBackgroundColor[4] = {20, 50, 128, SDL_ALPHA_OPAQUE};
 
     static std::string getResourcePath(const std::string &subDir = "");
 
@@ -44,13 +46,18 @@ class Graphics {
     void drawLine(Position p1, Position p2, bool blue = false);
     void overlayColor(Uint8* color);
     void beginDraw();
+    void blitLayersToScreen();
     void present();
-    void blitForegroundToScreen();
     void setViewPort(FloatPosition pos);
+    SDL_Renderer* getRenderer(RenderLayer layer);
+    void setTransitionAlphaMod(Uint8 alphaMod);
 
   private:
+    // scale up a render surface and blit it to the screen
+    void blitSurfaceToScreen(SDL_Surface* surface, Uint8 alphaMod = 0xFF);
+    // scale up foreground and blit it to the screen, compensating for view port rounding
+    void blitForegroundToScreen();
     void draw(RenderLayer layer, SDL_Texture* texture, SDL_Rect src, SDL_Rect dest, DrawConfig& config);
-    SDL_Renderer* getRenderer(RenderLayer layer);
     SDL_Texture* getTexture(std::string path, RenderLayer layer);
     void updateWindowSize();
     FloatPosition getViewPortOffset();
@@ -59,10 +66,14 @@ class Graphics {
     SDL_Renderer* mRenderer{nullptr};
     SDL_Surface* mForegroundSurface{nullptr};
     SDL_Renderer* mForegroundRenderer{nullptr};
+    SDL_Surface* mTransitionSurface{nullptr};
+    SDL_Renderer* mTransitionRenderer{nullptr};
     std::map<std::string, SDL_Texture*> mTextures;
     int mWindowHeight, mWindowWidth;
     float mWindowScale;
 
     FloatPosition mViewPort{SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2};
+
+    Uint8 mTransitionAlphaMod = 0xFF;
 };
 #endif //GRAPHICS_H

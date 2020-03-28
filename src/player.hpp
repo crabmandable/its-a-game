@@ -4,6 +4,7 @@
 #include "input.hpp"
 #include <stdlib.h>
 #include <algorithm>
+#include <vector>
 #include "animated_sprite.hpp"
 #include "collision.hpp"
 #include "checkpoint.hpp"
@@ -24,6 +25,13 @@ class Player : public GameObject {
     const Position kCollisionLength{35, 2};
     const Position kCollisionOverhang{0, 0};
     const Position kCollisionOffset{11, 0};
+
+    enum class Event {
+      Death,
+      Respawn,
+      InputUnlocked,
+      InputLocked,
+    };
 
     enum class State {
       Idle,
@@ -52,11 +60,13 @@ class Player : public GameObject {
     Position getPosition();
     Velocity getVelocity();
     bool getFacing();
+    std::vector<Event>* getEvents();
     State getState();
     void isGrounded(bool grounded);
     void goToCheckpoint();
     void setCheckpoint(Checkpoint* checkpoint);
     void killPlayer(DeathType t);
+    void lockInput(int time_ms);
 
   protected:
     Sprite* getSprite();
@@ -78,5 +88,8 @@ class Player : public GameObject {
     Checkpoint* mCheckpoint = nullptr;
 
     Collision::CollisionEdge mCollisionEdges[4];
+
+    std::vector<Event> mEvents;
+    int mInputLock_ms = 0;
 };
 #endif // PLAYER_H

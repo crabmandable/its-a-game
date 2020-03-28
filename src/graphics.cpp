@@ -64,6 +64,7 @@ void Graphics::init() {
     return;
   }
 
+  // use black for foreground color key so that shadows get clipped to the drawn foreground
   Uint32 colorkey = SDL_MapRGB(mForegroundSurface->format, 0, 0, 0);
   SDL_SetColorKey(mForegroundSurface, SDL_TRUE, colorkey);
 
@@ -71,6 +72,21 @@ void Graphics::init() {
     std::cout << "Unable to create tile renderer:" << SDL_GetError() << std::endl;
     return;
   }
+
+  if (!(mTransitionSurface = SDL_CreateRGBSurface(0,  SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0, 0, 0, 0))) {
+    std::cout << "Unable to create tile surface:" << SDL_GetError() << std::endl;
+    return;
+  }
+
+  // use white for transition color key so that we can draw in black
+  colorkey = SDL_MapRGB(mTransitionSurface->format, 0xFF, 0xFF, 0xFF);
+  SDL_SetColorKey(mTransitionSurface, SDL_TRUE, colorkey);
+
+  if (!(mTransitionRenderer = SDL_CreateSoftwareRenderer(mTransitionSurface))) {
+    std::cout << "Unable to create tile renderer:" << SDL_GetError() << std::endl;
+    return;
+  }
+  SDL_SetRenderDrawBlendMode(mTransitionRenderer, SDL_BLENDMODE_BLEND);
 }
 
 SDL_Texture* Graphics::getTexture(std::string path, RenderLayer layer) {
@@ -113,8 +129,15 @@ void Graphics::beginDraw() {
   updateWindowSize();
   SDL_SetRenderDrawColor(mRenderer, kBackgroundColor[0], kBackgroundColor[1], kBackgroundColor[2], kBackgroundColor[3]);
   SDL_SetRenderDrawColor(mForegroundRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+  SDL_SetRenderDrawColor(mTransitionRenderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
   SDL_RenderClear(mRenderer);
   SDL_RenderClear(mForegroundRenderer);
+  SDL_RenderClear(mTransitionRenderer);
+}
+
+void Graphics::blitLayersToScreen() {
+  blitForegroundToScreen();
+  blitSurfaceToScreen(mTransitionSurface, mTransitionAlphaMod);
 }
 
 void Graphics::blitForegroundToScreen() {
@@ -138,6 +161,22 @@ void Graphics::blitForegroundToScreen() {
   SDL_Texture* fgTexture = SDL_CreateTextureFromSurface(mRenderer, mForegroundSurface);
   SDL_RenderCopy(mRenderer, fgTexture, &src, &dest);
   SDL_DestroyTexture(fgTexture);
+}
+
+void Graphics::blitSurfaceToScreen(SDL_Surface* surface, Uint8 alphaMod) {
+  SDL_Rect src, dest;
+  dest.x = dest.y = src.y = src.x = 0;
+
+  src.w = SCREEN_WIDTH;
+  src.h = SCREEN_HEIGHT;
+
+  dest.w = src.w * mWindowScale;
+  dest.h = src.h * mWindowScale;
+
+  SDL_Texture* texture = SDL_CreateTextureFromSurface(mRenderer, surface);
+  SDL_SetTextureAlphaMod(texture, alphaMod);
+  SDL_RenderCopy(mRenderer, texture, &src, &dest);
+  SDL_DestroyTexture(texture);
 }
 
 void Graphics::present() {
@@ -233,6 +272,8 @@ void Graphics::draw(RenderLayer layer, SDL_Texture* texture, SDL_Rect src, SDL_R
 
 SDL_Renderer* Graphics::getRenderer(RenderLayer layer) {
   switch(layer) {
+    case RenderLayer::Transition:
+      return mTransitionRenderer;
     case RenderLayer::Background:
       return mRenderer;
     case RenderLayer::Foreground:
@@ -276,3 +317,7 @@ FloatPosition Graphics::getViewPortOffset() {
   return FloatPosition(mViewPort.x - SCREEN_WIDTH / 2, mViewPort.y - SCREEN_HEIGHT / 2);
 }
 
+
+void Graphics::setTransitionAlphaMod(Uint8 alphaMod) {
+  mTransitionAlphaMod = alphaMod;
+}

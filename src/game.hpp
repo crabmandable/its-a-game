@@ -12,6 +12,7 @@
 #include "player.hpp"
 #include "room.hpp"
 #include "camera.hpp"
+#include "transition.hpp"
 #include "geometry.hpp"
 
 #ifndef DEBUG
@@ -32,6 +33,7 @@ class Game {
     void draw(int elapsed_ms);
     void handleInput();
     void updatePlayerPosition(int elapsed_ms);
+    void handlePlayerEvents();
 
     SDL_Event mEvent;
     bool mRunning{true};
@@ -42,6 +44,7 @@ class Game {
 
     Graphics mGraphics;
     Input mInput;
+    Transition mTransition;
     Player mPlayer;
     Camera mCamera;
     Room* mRoom;

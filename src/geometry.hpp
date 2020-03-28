@@ -1,6 +1,7 @@
 #ifndef _UTILS_HPP_
 #define _UTILS_HPP_
 
+#include <SDL2/SDL.h>
 #include <algorithm>
 
 template <class Type, class InteroperableType>

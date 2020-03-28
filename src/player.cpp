@@ -20,10 +20,17 @@ Player::Player() {
 }
 
 void Player::update(Input& input, int elapsed_ms) {
+  // clear events
+  mEvents = std::vector<Event>();
+
   updateState(input, elapsed_ms);
   updateXVelocity(elapsed_ms);
   updateYVelocity(elapsed_ms);
   updateCollisionEdges();
+}
+
+std::vector<Player::Event>* Player::getEvents() {
+  return &mEvents;
 }
 
 void Player::updateState(Input& input, int elapsed_ms) {
@@ -31,22 +38,34 @@ void Player::updateState(Input& input, int elapsed_ms) {
     mDeathElapsed += elapsed_ms;
     if (mDeathElapsed >= kRespawnTime_ms) {
       goToCheckpoint();
+      mEvents.push_back(Event::Respawn);
       mState = State::Idle;
     }
     return;
   }
 
-  bool right = input.keyIsHeld(SDL_SCANCODE_D);
-  bool left = input.keyIsHeld(SDL_SCANCODE_A);
-  bool jump = input.keyIsHeld(SDL_SCANCODE_SPACE) || input.keyIsHeld(SDL_SCANCODE_W);
-
+  bool left, right, jump = false;
   mDirection = 0;
-  if (right && !left) {
-    mIsFacingRight = true;
-    mDirection = 1;
-  } else if (left && !right) {
-    mIsFacingRight = false;
-    mDirection = -1;
+
+  if (mInputLock_ms > 0) {
+    mInputLock_ms -= elapsed_ms;
+    if (mInputLock_ms <= 0) {
+      mEvents.push_back(Event::InputUnlocked);
+    }
+  }
+
+  if (mInputLock_ms <= 0) {
+    right = input.keyIsHeld(SDL_SCANCODE_D);
+    left = input.keyIsHeld(SDL_SCANCODE_A);
+    jump = input.keyIsHeld(SDL_SCANCODE_SPACE) || input.keyIsHeld(SDL_SCANCODE_W);
+
+    if (right && !left) {
+      mIsFacingRight = true;
+      mDirection = 1;
+    } else if (left && !right) {
+      mIsFacingRight = false;
+      mDirection = -1;
+    }
   }
 
   if (mGrounded) {
@@ -247,4 +266,11 @@ void Player::killPlayer(DeathType t) {
   mState = State::Dead;
   mDeathElapsed = 0;
   mVelocity = Velocity(0, 0);
+  mEvents.push_back(Event::Death);
+  lockInput(500);
+}
+
+void Player::lockInput(int time_ms) {
+  mInputLock_ms = time_ms;
+  mEvents.push_back(Event::InputLocked);
 }

@@ -27,6 +27,8 @@ void Game::loadRoom(std::string name) {
   mPlayer.setPosition(start);
   mRoom->adjustCameraTarget(start);
   mCamera.setPosition(start);
+  mPlayer.lockInput(100);
+  mTransition.startTransition(Transition::Type::FadeIn, Transition::After::Disable);
 }
 
 void Game::gameLoop() {
@@ -73,6 +75,7 @@ void Game::update(int elapsed_ms) {
   mCamera.updateViewPort(mGraphics);
 
   mPlayer.updateAnimation();
+  handlePlayerEvents();
 }
 
 void Game::draw(int elapsed_ms) {
@@ -80,9 +83,9 @@ void Game::draw(int elapsed_ms) {
 
   mRoom->drawTiles(mGraphics);
   mPlayer.draw(mGraphics, elapsed_ms);
-
+  mTransition.updateAndDraw(mGraphics, elapsed_ms);
   mRoom->drawBackground(mGraphics);
-  mGraphics.blitForegroundToScreen();
+  mGraphics.blitLayersToScreen();
   mRoom->drawOverlay(mGraphics);
 
 #if DEBUG
@@ -172,3 +175,24 @@ void Game::updatePlayerPosition(int elapsed_ms) {
   mPlayer.isGrounded(grounded);
 }
 
+void Game::handlePlayerEvents() {
+  for (auto e: *mPlayer.getEvents()) {
+    switch(e) {
+      case Player::Event::Death: {
+        Position origin = Position(Graphics::SCREEN_WIDTH, Graphics::SCREEN_HEIGHT) - ((Position(Graphics::SCREEN_WIDTH, Graphics::SCREEN_HEIGHT) / 2) + (Position)mCamera.getPosition() - mPlayer.getPosition());
+        mTransition.startTransition(Transition::Type::Circle, Transition::After::Hold, origin);
+        break;
+      }
+      case Player::Event::Respawn: {
+        mTransition.startTransition(Transition::Type::FadeIn, Transition::After::Disable);
+        FloatPosition cameraPos = mPlayer.getPosition();
+        mRoom->adjustCameraTarget(cameraPos);
+        mCamera.setPosition(cameraPos);
+        break;
+      }
+      case Player::Event::InputLocked:
+      case Player::Event::InputUnlocked:
+        break;
+    }
+  }
+}
