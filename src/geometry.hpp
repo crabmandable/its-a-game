@@ -78,7 +78,7 @@ class Point {
     }
 
     Point absolute() {
-      return Point(abs(x), std::abs(y));
+      return Point(abs(x), abs(y));
     }
 
     bool isZero() {

@@ -164,7 +164,7 @@ void Player::updatePosition(int elapsed_ms)
   // round x to make sure speed is equal in both directions
   // floor y to prevent jiggling up and down
   FloatPosition fp = ((FloatPosition)mPosition) + (mVelocity * elapsed_ms);
-  mPosition = Position(std::round(fp.x), floor(fp.y));
+  mPosition = Position(roundl(fp.x), floor(fp.y));
 }
 
 Sprite* Player::getSprite() {

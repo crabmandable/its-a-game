@@ -211,8 +211,8 @@ void Graphics::drawBackground(std::string path, SDL_Rect src, DrawConfig& config
   int screenW = SCREEN_WIDTH * mWindowScale;
   int screenH = SCREEN_HEIGHT * mWindowScale;
 
-  dest.x -= std::round(config.paralaxX * getViewPortOffset().x * mWindowScale);
-  dest.y -= std::round(config.paralaxY * getViewPortOffset().y * mWindowScale);
+  dest.x -= roundl(config.paralaxX * getViewPortOffset().x * mWindowScale);
+  dest.y -= roundl(config.paralaxY * getViewPortOffset().y * mWindowScale);
 
   if (config.repeatX || config.repeatY)
   {
@@ -260,8 +260,8 @@ void Graphics::drawBackground(std::string path, SDL_Rect src, DrawConfig& config
 }
 
 void Graphics::draw(RenderLayer layer, SDL_Texture* texture, SDL_Rect src, SDL_Rect dest, DrawConfig& config) {
-  dest.x -= std::round(getViewPortOffset().x);
-  dest.y -= std::round(getViewPortOffset().y);
+  dest.x -= roundl(getViewPortOffset().x);
+  dest.y -= roundl(getViewPortOffset().y);
 
   if ((dest.x < SCREEN_WIDTH && dest.x + dest.w > 0) && 
       (dest.y < SCREEN_HEIGHT && dest.y + dest.h > 0))
