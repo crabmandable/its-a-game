@@ -30,8 +30,8 @@ void Transition::updateAndDraw(Graphics& graphics, int elapsed_ms) {
   SDL_Renderer* renderer = graphics.getRenderer(Graphics::RenderLayer::Transition);
   SDL_Rect rect;
   rect.x = rect.y = 0;
-  rect.w = Graphics::SCREEN_WIDTH;
-  rect.h = Graphics::SCREEN_HEIGHT;
+  rect.w = SCREEN_WIDTH;
+  rect.h = SCREEN_HEIGHT;
 
   if (mType == Type::Circle) {
     // first overlay everything with black
@@ -42,7 +42,7 @@ void Transition::updateAndDraw(Graphics& graphics, int elapsed_ms) {
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
     int transitionLength = getTransitionLength();
     float radiusFactor = (float)(transitionLength - mElapsed_ms) / transitionLength;
-    int radius = Graphics::SCREEN_WIDTH * radiusFactor;
+    int radius = SCREEN_WIDTH * radiusFactor;
     filledCircleColor(
         renderer,
         mOrigin.x,
@@ -70,7 +70,7 @@ void Transition::startTransition(Type type, After after, Position origin) {
   mElapsed_ms = 0;
   mOrigin = origin;
   mOrigin = Position::max(mOrigin, {0, 0});
-  mOrigin = Position::min(mOrigin, {Graphics::SCREEN_WIDTH, Graphics::SCREEN_HEIGHT});
+  mOrigin = Position::min(mOrigin, {SCREEN_WIDTH, SCREEN_HEIGHT});
 }
 
 int Transition::getTransitionLength() {

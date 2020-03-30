@@ -233,8 +233,8 @@ void Room::adjustCameraTarget(FloatPosition& target) {
   int w = mColumns * Graphics::TILE_SIZE;
   int h = mRows * Graphics::TILE_SIZE;
 
-  target = FloatPosition::max(target, {Graphics::SCREEN_WIDTH / 2, Graphics::SCREEN_HEIGHT / 2});
-  target = FloatPosition::min(target, {(float)w - Graphics::SCREEN_WIDTH / 2, (float)h - Graphics::SCREEN_HEIGHT / 2});
+  target = FloatPosition::max(target, {(float)SCREEN_WIDTH / 2, (float)SCREEN_HEIGHT / 2});
+  target = FloatPosition::min(target, {(float)w - SCREEN_WIDTH / 2, (float)h - SCREEN_HEIGHT / 2});
 }
 
 void Room::updateCheckpoint(Player& player) {

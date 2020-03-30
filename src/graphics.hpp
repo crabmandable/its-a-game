@@ -6,6 +6,8 @@
 #include <map>
 #include <iostream>
 #include "geometry.hpp"
+#include "screen_properties.hpp"
+
 class Graphics {
   public:
     enum class RenderLayer: char {
@@ -24,15 +26,11 @@ class Graphics {
     };
 
     static const int TILE_SIZE = 16;
-    static const int SCREEN_WIDTH = 640;
-    static const int SCREEN_HEIGHT = 360;
-    static const int HEIGHT_RATIO = 9;
-    static const int WIDTH_RATIO = 16;
     // OVERBUFFER is used for foreground layer, in order to do sub-pixel camera movements
     static const int OVERBUFFER = 2;
     const Uint8 kLineColor[4] = {255, 0, 0, SDL_ALPHA_OPAQUE};
     const Uint8 kBlueLineColor[4] = {0, 0, 255, SDL_ALPHA_OPAQUE};
-    const Uint8 kBackgroundColor[4] = {20, 50, 128, SDL_ALPHA_OPAQUE};
+    const Uint8 kBackgroundColor[4] = {0, 0, 0, SDL_ALPHA_OPAQUE};
 
     static std::string getResourcePath(const std::string &subDir = "");
 
@@ -44,6 +42,7 @@ class Graphics {
     void drawTexture(RenderLayer layer, std::string path, Rect src, Rect dest, DrawConfig& config);
     void drawTile(std::string tileSheetPath, Rect src, int columns, int row);
     void drawLine(Position p1, Position p2, bool blue = false);
+    void drawWindowBorders();
     void overlayColor(Uint8* color);
     void beginDraw();
     void blitLayersToScreen();
@@ -62,6 +61,8 @@ class Graphics {
     void updateWindowSize();
     FloatPosition getViewPortOffset();
 
+    const Size kBufferSize = {640, 480};
+
     SDL_Window* mWindow{nullptr};
     SDL_Renderer* mRenderer{nullptr};
     SDL_Surface* mForegroundSurface{nullptr};
@@ -69,10 +70,8 @@ class Graphics {
     SDL_Surface* mTransitionSurface{nullptr};
     SDL_Renderer* mTransitionRenderer{nullptr};
     std::map<std::string, SDL_Texture*> mTextures;
-    int mWindowHeight, mWindowWidth;
-    float mWindowScale;
 
-    FloatPosition mViewPort{SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2};
+    FloatPosition mViewPort{ScreenProperties::DEFAULT_WIDTH / 2, ScreenProperties::DEFAULT_HEIGHT / 2};
 
     Uint8 mTransitionAlphaMod = 0xFF;
 };

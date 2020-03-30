@@ -107,6 +107,7 @@ void Game::draw(int elapsed_ms) {
   }
 #endif
   
+  mGraphics.drawWindowBorders();
   mGraphics.present();
 }
 
@@ -179,7 +180,7 @@ void Game::handlePlayerEvents() {
   for (auto e: *mPlayer.getEvents()) {
     switch(e) {
       case Player::Event::Death: {
-        Position origin = Position(Graphics::SCREEN_WIDTH, Graphics::SCREEN_HEIGHT) - ((Position(Graphics::SCREEN_WIDTH, Graphics::SCREEN_HEIGHT) / 2) + (Position)mCamera.getPosition() - mPlayer.getPosition());
+        Position origin = Position(SCREEN_WIDTH, SCREEN_HEIGHT) - ((Position(SCREEN_WIDTH, SCREEN_HEIGHT) / 2) + (Position)mCamera.getPosition() - mPlayer.getPosition());
         mTransition.startTransition(Transition::Type::Circle, Transition::After::Hold, origin);
         break;
       }

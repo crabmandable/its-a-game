@@ -46,8 +46,8 @@ std::string Graphics::getResourcePath(const std::string &subDir) {
 
 void Graphics::init() {
   if (SDL_CreateWindowAndRenderer(
-    SCREEN_WIDTH,
-    SCREEN_HEIGHT,
+    ScreenProperties::DEFAULT_WIDTH,
+    ScreenProperties::DEFAULT_HEIGHT,
     SDL_WINDOW_RESIZABLE,
     &mWindow,
     &mRenderer
@@ -59,7 +59,7 @@ void Graphics::init() {
   SDL_SetRenderDrawBlendMode(mRenderer, SDL_BLENDMODE_BLEND);
   SDL_SetWindowTitle(mWindow, "Zach's amazing game");
 
-  if (!(mForegroundSurface = SDL_CreateRGBSurface(0,  SCREEN_WIDTH + OVERBUFFER * 2, SCREEN_HEIGHT + OVERBUFFER * 2, 32, 0, 0, 0, 0))) {
+  if (!(mForegroundSurface = SDL_CreateRGBSurface(0,  kBufferSize.w + OVERBUFFER * 2, kBufferSize.h + OVERBUFFER * 2, 32, 0, 0, 0, 0))) {
     std::cout << "Unable to create tile surface:" << SDL_GetError() << std::endl;
     return;
   }
@@ -73,7 +73,7 @@ void Graphics::init() {
     return;
   }
 
-  if (!(mTransitionSurface = SDL_CreateRGBSurface(0,  SCREEN_WIDTH, SCREEN_HEIGHT, 32, 0, 0, 0, 0))) {
+  if (!(mTransitionSurface = SDL_CreateRGBSurface(0,  kBufferSize.w, kBufferSize.h, 32, 0, 0, 0, 0))) {
     std::cout << "Unable to create tile surface:" << SDL_GetError() << std::endl;
     return;
   }
@@ -117,12 +117,9 @@ SDL_Texture* Graphics::getTexture(std::string path, RenderLayer layer) {
 }
 
 void Graphics::updateWindowSize() {
-  SDL_GetWindowSize(mWindow, &mWindowWidth, &mWindowHeight);
-  if (mWindowWidth / WIDTH_RATIO > mWindowHeight / HEIGHT_RATIO) {
-    mWindowScale = (float)mWindowHeight / SCREEN_HEIGHT;
-  } else {
-    mWindowScale  = (float)mWindowWidth/ SCREEN_WIDTH;
-  }
+  Size size;
+  SDL_GetWindowSize(mWindow, &size.w, &size.h);
+  ScreenProperties::getInstance().setScreenSize(size);
 }
 
 void Graphics::beginDraw() {
@@ -141,22 +138,26 @@ void Graphics::blitLayersToScreen() {
 }
 
 void Graphics::blitForegroundToScreen() {
+  Size borders = ScreenProperties::getInstance().getBorderSize();
   SDL_Rect src, dest;
   src.y = src.x = 0;
+
+  dest.x = borders.w;
+  dest.y = borders.h;
 
   src.w = SCREEN_WIDTH + OVERBUFFER * 2;
   src.h = SCREEN_HEIGHT + OVERBUFFER * 2;
 
-  dest.w = ceil(((float)src.w + OVERBUFFER * 2) * mWindowScale);
-  dest.h = ceil(((float)src.h + OVERBUFFER * 2) * mWindowScale);
+  dest.w = ceil(((float)src.w + OVERBUFFER * 2) * WINDOW_SCALE);
+  dest.h = ceil(((float)src.h + OVERBUFFER * 2) * WINDOW_SCALE);
   
   // camera position is actually a decimal
   // we need to nudge after scaling to allow subpixel camera movement
   float xOffset = getViewPortOffset().x - floor(getViewPortOffset().x); 
-  dest.x = (1 - xOffset > xOffset ? -xOffset : 1 - xOffset) * mWindowScale - OVERBUFFER;
+  dest.x += (1 - xOffset > xOffset ? -xOffset : 1 - xOffset) * WINDOW_SCALE - OVERBUFFER;
 
   float yOffset = getViewPortOffset().y - floor(getViewPortOffset().y); 
-  dest.y = (1 - yOffset > yOffset ? -yOffset : 1 - yOffset) * mWindowScale - OVERBUFFER;
+  dest.y += (1 - yOffset > yOffset ? -yOffset : 1 - yOffset) * WINDOW_SCALE - OVERBUFFER;
 
   SDL_Texture* fgTexture = SDL_CreateTextureFromSurface(mRenderer, mForegroundSurface);
   SDL_RenderCopy(mRenderer, fgTexture, &src, &dest);
@@ -164,14 +165,17 @@ void Graphics::blitForegroundToScreen() {
 }
 
 void Graphics::blitSurfaceToScreen(SDL_Surface* surface, Uint8 alphaMod) {
+  Size borders = ScreenProperties::getInstance().getBorderSize();
   SDL_Rect src, dest;
-  dest.x = dest.y = src.y = src.x = 0;
+  src.y = src.x = 0;
+  dest.x = borders.w;
+  dest.y = borders.h;
 
   src.w = SCREEN_WIDTH;
   src.h = SCREEN_HEIGHT;
 
-  dest.w = src.w * mWindowScale;
-  dest.h = src.h * mWindowScale;
+  dest.w = src.w * WINDOW_SCALE;
+  dest.h = src.h * WINDOW_SCALE;
 
   SDL_Texture* texture = SDL_CreateTextureFromSurface(mRenderer, surface);
   SDL_SetTextureAlphaMod(texture, alphaMod);
@@ -203,16 +207,21 @@ void Graphics::drawTexture(RenderLayer layer, std::string path, Rect src, Rect d
 void Graphics::drawBackground(std::string path, SDL_Rect src, DrawConfig& config) {
   SDL_Renderer* renderer = getRenderer(RenderLayer::Background);
   SDL_Texture* texture = getTexture(path, RenderLayer::Background);
+  Size borders = ScreenProperties::getInstance().getBorderSize();
   SDL_Rect dest = src;
-  dest.w *= mWindowScale;
-  dest.h *= mWindowScale;
-  dest.x *= mWindowScale;
-  dest.y *= mWindowScale;
-  int screenW = SCREEN_WIDTH * mWindowScale;
-  int screenH = SCREEN_HEIGHT * mWindowScale;
+  dest.w *= WINDOW_SCALE;
+  dest.h *= WINDOW_SCALE;
+  dest.x *= WINDOW_SCALE;
+  dest.y *= WINDOW_SCALE;
 
-  dest.x -= roundl(config.paralaxX * getViewPortOffset().x * mWindowScale);
-  dest.y -= roundl(config.paralaxY * getViewPortOffset().y * mWindowScale);
+  dest.x += borders.w;
+  dest.y += borders.h;
+
+  int screenW = SCREEN_WIDTH * WINDOW_SCALE;
+  int screenH = SCREEN_HEIGHT * WINDOW_SCALE;
+
+  dest.x -= roundl(config.paralaxX * getViewPortOffset().x * WINDOW_SCALE);
+  dest.y -= roundl(config.paralaxY * getViewPortOffset().y * WINDOW_SCALE);
 
   if (config.repeatX || config.repeatY)
   {
@@ -263,8 +272,8 @@ void Graphics::draw(RenderLayer layer, SDL_Texture* texture, SDL_Rect src, SDL_R
   dest.x -= roundl(getViewPortOffset().x);
   dest.y -= roundl(getViewPortOffset().y);
 
-  if ((dest.x < SCREEN_WIDTH && dest.x + dest.w > 0) && 
-      (dest.y < SCREEN_HEIGHT && dest.y + dest.h > 0))
+  if ((dest.x < SCREEN_WIDTH + OVERBUFFER && dest.x + dest.w > -OVERBUFFER) && 
+      (dest.y < SCREEN_HEIGHT + OVERBUFFER && dest.y + dest.h > -OVERBUFFER))
   {
     SDL_RenderCopyEx(getRenderer(layer), texture, &src, &dest, 0, NULL, config.flip);
   }
@@ -285,20 +294,22 @@ SDL_Renderer* Graphics::getRenderer(RenderLayer layer) {
 void Graphics::overlayColor(Uint8* color) {
   (void) color;
   SDL_SetRenderDrawColor(mRenderer, color[0], color[1], color[2], color[3]);
+  Size borders = ScreenProperties::getInstance().getBorderSize();
   SDL_Rect rect;
-  rect.y = rect.x = 0;
-  rect.w = SCREEN_WIDTH * mWindowScale;
-  rect.h = SCREEN_HEIGHT * mWindowScale;
+  rect.x = borders.w;
+  rect.y = borders.h;
+  rect.w = SCREEN_WIDTH * WINDOW_SCALE;
+  rect.h = SCREEN_HEIGHT * WINDOW_SCALE;
   SDL_RenderFillRect(mRenderer, &rect);
   SDL_SetRenderDrawColor(mRenderer, kBackgroundColor[0], kBackgroundColor[1], kBackgroundColor[2], kBackgroundColor[3]);
 }
 
 void Graphics::drawLine(Position p1, Position p2, bool blue) {
   p1 -= getViewPortOffset();
-  p1 *= mWindowScale;
+  p1 *= WINDOW_SCALE;
 
   p2 -= getViewPortOffset();
-  p2 *= mWindowScale;
+  p2 *= WINDOW_SCALE;
 
   if (blue) {
     SDL_SetRenderDrawColor(mRenderer, kBlueLineColor[0], kBlueLineColor[1], kBlueLineColor[2], kBlueLineColor[3]);
@@ -320,4 +331,34 @@ FloatPosition Graphics::getViewPortOffset() {
 
 void Graphics::setTransitionAlphaMod(Uint8 alphaMod) {
   mTransitionAlphaMod = alphaMod;
+}
+
+void Graphics::drawWindowBorders() {
+  SDL_SetRenderDrawColor(mRenderer, kBackgroundColor[0], kBackgroundColor[1], kBackgroundColor[2], kBackgroundColor[3]);
+
+  Size borderSize = ScreenProperties::getInstance().getBorderSize();
+  Size windowSize = ScreenProperties::getInstance().getWindowSize();
+
+  SDL_Rect rect;
+  rect.x = rect.y = 0;
+  rect.w = borderSize.w;
+  rect.h = windowSize.h;
+  SDL_RenderFillRect(mRenderer, &rect);
+
+  rect.x = rect.y = 0;
+  rect.w = windowSize.w;
+  rect.h = borderSize.h;
+  SDL_RenderFillRect(mRenderer, &rect);
+
+  rect.x = windowSize.w - borderSize.w;
+  rect.y = 0;
+  rect.w = borderSize.w;
+  rect.h = windowSize.h;
+  SDL_RenderFillRect(mRenderer, &rect);
+
+  rect.x = 0;
+  rect.y = windowSize.h - borderSize.h;
+  rect.w = windowSize.w;
+  rect.h = borderSize.h;
+  SDL_RenderFillRect(mRenderer, &rect);
 }

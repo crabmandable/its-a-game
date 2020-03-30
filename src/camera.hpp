@@ -22,7 +22,7 @@ class Camera {
     FloatPosition getPosition();
   private:
     Velocity mVelocity;
-    FloatPosition mPosition{Graphics::SCREEN_WIDTH / 2, Graphics::SCREEN_HEIGHT / 2};
-    FloatPosition mTarget{Graphics::SCREEN_WIDTH / 2, Graphics::SCREEN_HEIGHT / 2};
+    FloatPosition mPosition{ScreenProperties::DEFAULT_WIDTH / 2, ScreenProperties::DEFAULT_HEIGHT / 2};
+    FloatPosition mTarget{ScreenProperties::DEFAULT_WIDTH / 2, ScreenProperties::DEFAULT_HEIGHT / 2};
 };
 #endif

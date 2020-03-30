@@ -7,6 +7,9 @@ void Camera::updateTarget(Player& player, Room& room) {
   mTarget += kAhead * (facingRight > 0 ? 1 : -1);
 
   room.adjustCameraTarget(mTarget);
+
+  // prevents camera going out of screen, which can happen when resizing
+  room.adjustCameraTarget(mPosition);
 }
 
 void Camera::update(int elapsed_ms) {
