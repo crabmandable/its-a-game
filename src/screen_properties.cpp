@@ -23,8 +23,8 @@ void ScreenProperties::setScreenSize(Size windowSize) {
 
 Size ScreenProperties::getBorderSize() {
   return Size(
-      abs(mWindowSize.w - (mScreenSize.w * mWindowScale)) / 2,
-      abs(mWindowSize.h - (mScreenSize.h * mWindowScale)) / 2
+      ceil(abs(mWindowSize.w - (mScreenSize.w * mWindowScale)) / 2.0),
+      ceil(abs(mWindowSize.h - (mScreenSize.h * mWindowScale)) / 2.0)
   );
 }
 

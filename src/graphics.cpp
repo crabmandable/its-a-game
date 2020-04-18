@@ -87,6 +87,9 @@ void Graphics::init() {
     return;
   }
   SDL_SetRenderDrawBlendMode(mTransitionRenderer, SDL_BLENDMODE_BLEND);
+
+  // vsync
+  SDL_GL_SetSwapInterval(1);
 }
 
 SDL_Texture* Graphics::getTexture(std::string path, RenderLayer layer) {
